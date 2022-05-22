@@ -1,7 +1,8 @@
 import { EditorState, Extension, Text } from '@codemirror/state';
 import { EditorView, PluginValue, ViewPlugin, ViewUpdate } from '@codemirror/view';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { debounce } from './util';
+import { basicSetup } from '@codemirror/basic-setup';
+import React, { useEffect, useMemo, useRef, } from 'react';
+import { debounce } from './debounce';
 
 const theme = EditorView.theme({
     '&': {
@@ -24,26 +25,36 @@ const theme = EditorView.theme({
     }
 }, { dark: true });
 
+export type OnEditorUpdate = { (content: string): void };
+
 export type EditorProps = {
     extensions: Extension[];
     onUpdate: OnEditorUpdate;
-    initialText: string | null;
+    text: string;
 };
 
-export type OnEditorUpdate = { (content: string): void };
+/**
+ * component for the seq editor
+ */
+const Editor = ({ extensions, onUpdate, text}: EditorProps) => {
+    const notifier = useMemo(
+        () => updateNotifier([onUpdate]),
+        [onUpdate]
+    );
 
-export default function Editor({ extensions, onUpdate, initialText }: EditorProps) {
-    const [text, setText] = useState(initialText ? initialText : '');
-    const parent = useRef(null);
-
-    const notifier = useMemo(() => updateNotifier([onUpdate, setText]), [onUpdate, setText]);
     const editorState = useMemo(() => {
         return EditorState.create({
             doc: text,
-            extensions: [notifier, theme, ...extensions],
+            extensions: [basicSetup, theme, notifier, ...extensions],
         });
-    }, [notifier, theme, extensions]);
+        // text is omitted here because we don't want to recreate
+        // the editor state whenever the text changes. the editor
+        // is the source of truth for these changes, we can leave
+        // it be.
+    }, [basicSetup, theme, notifier, extensions]);
 
+    // then set up the view
+    const parent = useRef(null);
 
     useEffect(() => {
         if (!parent.current) {
@@ -58,12 +69,18 @@ export default function Editor({ extensions, onUpdate, initialText }: EditorProp
         return () => {
             view.destroy();
         };
-    }, [parent]);
+    }, [editorState, parent]);
 
     return <div ref={parent} />;
-}
+};
 
-const updateNotifier = <V extends PluginValue>(onUpdate: OnEditorUpdate[]): ViewPlugin<V> => {
+export default Editor;
+
+/**
+ * creates a new ViewPlugin which calls a list of OnEditorUpdate functions
+ * when the document state changes.
+ */
+const updateNotifier = <V extends PluginValue>(onUpdates: OnEditorUpdate[]): ViewPlugin<V> => {
     return ViewPlugin.fromClass(class {
         view: EditorView;
         debounce: (arg: Text) => void;
@@ -71,7 +88,7 @@ const updateNotifier = <V extends PluginValue>(onUpdate: OnEditorUpdate[]): View
         constructor(view: EditorView) {
             this.view = view;
             this.debounce = debounce((doc) => {
-                onUpdate.map((f) => f(doc.toJSON().join('\n')));
+                onUpdates.forEach((onUpdate) => onUpdate(doc.toJSON().join('\n')));
             }, 1000);
         }
 

@@ -1,48 +1,48 @@
-import { Extent } from './layout';
+import { Extent, newExtent } from './layout';
 
 export interface Style {
-    frame: FrameStyle,
-    lifeline: LifelineStyle,
-    message: MessageStyle,
+    readonly frame: FrameStyle,
+    readonly lifeline: LifelineStyle,
+    readonly message: MessageStyle,
 }
 
 export interface FrameStyle {
-    padding: Padding,
+    readonly padding: Padding,
 }
 
 export interface LifelineStyle {
-    padding: Padding,
-    margin: Padding,
-    font: Font,
-    boxLineWidth: number,
-    lineWidth: number,
+    readonly padding: Padding,
+    readonly margin: Padding,
+    readonly font: Font,
+    readonly boxLineWidth: number,
+    readonly lineWidth: number,
 }
 
 export interface MessageStyle {
-    padding: Padding,
-    margin: Padding,
-    lineWidth: number,
-    arrowWidth: number,
-    arrowHeight: number,
+    readonly padding: Padding,
+    readonly margin: Padding,
+    readonly lineWidth: number,
+    readonly arrowWidth: number,
+    readonly arrowHeight: number,
 }
 
 export type FontWeight = 'normal' | 'bold';
 export type FontStyle = 'normal' | 'italic';
 
 export interface Font {
-    family: string,
-    size: number,
-    weight: FontWeight,
-    style: FontStyle,
+    readonly family: string,
+    readonly size: number,
+    readonly weight: FontWeight,
+    readonly style: FontStyle,
 }
 
-export function newFont(
+export const newFont = (
     family: string, size: number,
     weight: FontWeight = 'normal',
     style: FontStyle = 'normal'
-) {
+): Font => {
     return { family, size, weight, style };
-}
+};
 
 export class Padding {
     constructor(
@@ -61,7 +61,7 @@ export class Padding {
     };
 
     pad = (extent: Extent): Extent => {
-        return new Extent(
+        return newExtent(
             extent.width + this.horizontal(),
             extent.height + this.vertical()
         );

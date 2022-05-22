@@ -31,11 +31,11 @@ export interface Failure {
 }
 
 // some convenience methods to build `Result`s for us
-function success<T>(ctx: Context, value: T): Success<T> {
+const success = <T>(ctx: Context, value: T): Success<T> => {
     return { success: true, value, ctx };
-}
+};
 
-function failure(ctx: Context, description: string, cause: Failure | null = null): Failure {
+const failure = (ctx: Context, description: string, cause: Failure | null = null): Failure => {
     return {
         success: false,
         description,
@@ -45,10 +45,10 @@ function failure(ctx: Context, description: string, cause: Failure | null = null
             return failure(ctx, text, this);
         }
     };
-}
+};
 
 // parse an exact string
-export function str(match: string): Parser<string> {
+export const str = (match: string): Parser<string> => {
     return ctx => {
         const endIdx = ctx.index + match.length;
         if (endIdx >= ctx.code.length) {
@@ -61,10 +61,10 @@ export function str(match: string): Parser<string> {
 
         return failure(ctx, `matching "${match}"`);
     };
-}
+};
 
 // parse a regex match
-export function regex(re: RegExp, expected: string): Parser<string> {
+export const regex = (re: RegExp, expected: string): Parser<string> => {
     return ctx => {
         re.lastIndex = ctx.index;
 
@@ -75,9 +75,9 @@ export function regex(re: RegExp, expected: string): Parser<string> {
 
         return failure(ctx, `matching ${expected}`);
     };
-}
+};
 
-export function eof(): Parser<null> {
+export const eof = (): Parser<null> => {
     return ctx => {
         if (ctx.index >= ctx.code.length) {
             return success(ctx, null);
@@ -85,10 +85,10 @@ export function eof(): Parser<null> {
 
         return failure(ctx, 'matching eof');
     };
-}
+};
 
 // requires parser, then discards the result
-export function discard<T>(parser: Parser<T>): Parser<null> {
+export const discard = <T>(parser: Parser<T>): Parser<null> => {
     return ctx => {
         const res = parser(ctx);
         if (res.success) {
@@ -97,10 +97,10 @@ export function discard<T>(parser: Parser<T>): Parser<null> {
             return failure(res.ctx, 'discard', res);
         }
     };
-}
+};
 
 // one of parsers (in order)
-export function any<T>(parsers: Parser<T>[]): Parser<T> {
+export const any = <T>(parsers: Parser<T>[]): Parser<T> => {
     return ctx => {
         let furthestRes: Failure | null = null;
 
@@ -122,15 +122,15 @@ export function any<T>(parsers: Parser<T>[]): Parser<T> {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         return failure(furthestRes!.ctx, 'any', furthestRes!);
     };
-}
+};
 
 // zero or once of parser
-export function optional<T>(parser: Parser<T>): Parser<T | null> {
+export const optional = <T>(parser: Parser<T>): Parser<T | null> => {
     return any([parser, ctx => success(ctx, null)]);
-}
+};
 
 // zero or more of parser, returns empty array if none
-export function many<T>(parser: Parser<T>): Parser<T[]> {
+export const many = <T>(parser: Parser<T>): Parser<T[]> => {
     return ctx => {
         const values: T[] = [];
         let nextCtx = ctx;
@@ -148,7 +148,7 @@ export function many<T>(parser: Parser<T>): Parser<T[]> {
 
         return success(nextCtx, values);
     };
-}
+};
 
 type Pair<A, B> = Readonly<{
     first: A,
@@ -156,7 +156,7 @@ type Pair<A, B> = Readonly<{
 }>;
 
 // executes both parsers returning the result as a Pair
-export function pair<A, B>(parserA: Parser<A>, parserB: Parser<B>): Parser<Pair<A, B>> {
+export const pair = <A, B>(parserA: Parser<A>, parserB: Parser<B>): Parser<Pair<A, B>> => {
     return ctx => {
         const resA = parserA(ctx);
         if (!resA.success) {
@@ -170,10 +170,10 @@ export function pair<A, B>(parserA: Parser<A>, parserB: Parser<B>): Parser<Pair<
 
         return success(resB.ctx, { first: resA.value, second: resB.value });
     };
-}
+};
 
 // executes both parsers, discarding the second value
-export function terminated<A, B>(parserA: Parser<A>, parserB: Parser<B>): Parser<A> {
+export const terminated = <A, B>(parserA: Parser<A>, parserB: Parser<B>): Parser<A> => {
     return ctx => {
         const resA = parserA(ctx);
         if (!resA.success) {
@@ -187,10 +187,10 @@ export function terminated<A, B>(parserA: Parser<A>, parserB: Parser<B>): Parser
 
         return success(resB.ctx, resA.value);
     };
-}
+};
 
 // executes all parsers in order
-export function sequence<T>(parsers: Parser<T>[]): Parser<T[]> {
+export const sequence = <T>(parsers: Parser<T>[]): Parser<T[]> => {
     return ctx => {
         const values: T[] = [];
         let nextCtx = ctx;
@@ -207,10 +207,10 @@ export function sequence<T>(parsers: Parser<T>[]): Parser<T[]> {
 
         return success(nextCtx, values);
     };
-}
+};
 
 // returns items which match the provided fn
-export function filter<T>(parser: Parser<T[]>, fn: (val: T) => boolean): Parser<T[]> {
+export const filter = <T>(parser: Parser<T[]>, fn: (val: T) => boolean): Parser<T[]> => {
     return ctx => {
         const values: T[] = [];
 
@@ -227,10 +227,10 @@ export function filter<T>(parser: Parser<T[]>, fn: (val: T) => boolean): Parser<
 
         return success(res.ctx, values);
     };
-}
+};
 
 // removes all nulls from the results of a list of parsers
-export function filter_nulls<T>(parser: Parser<(T | null)[]>): Parser<T[]> {
+export const filter_nulls = <T>(parser: Parser<(T | null)[]>): Parser<T[]> => {
     return ctx => {
         const values: T[] = [];
         const res = parser(ctx);
@@ -247,10 +247,10 @@ export function filter_nulls<T>(parser: Parser<(T | null)[]>): Parser<T[]> {
 
         return success(res.ctx, values);
     };
-}
+};
 
 // maps the result of a successful parser over fn
-export function map<A, B>(parser: Parser<A>, fn: (val: A) => B): Parser<B> {
+export const map = <A, B>(parser: Parser<A>, fn: (val: A) => B): Parser<B> => {
     return ctx => {
         const res = parser(ctx);
         if (res.success) {
@@ -259,4 +259,4 @@ export function map<A, B>(parser: Parser<A>, fn: (val: A) => B): Parser<B> {
             return failure(res.ctx, 'map', res);
         }
     };
-}
+};

@@ -1,6 +1,6 @@
 export interface Vector {
-    x: number
-    y: number
+    readonly x: number
+    readonly y: number
 }
 
 /**
@@ -175,7 +175,7 @@ export interface Graphics {
      * 
      * affects drawing state
      */
-    setFont(family: string, size: number, weight: 'bold' | 'normal', style: 'italic' | 'normal'): void
+    setFont(family: string, sizePt: number, weight: 'bold' | 'normal', style: 'italic' | 'normal'): void
 
     /**
      * set the line dash pattern

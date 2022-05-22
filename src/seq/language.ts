@@ -18,7 +18,7 @@ export interface Message {
 }
 
 // parse a SequenceDiagram from a string
-export function parseDiagram(code: string): ParsedDiagram | null {
+export const parseDiagram = (code: string): ParsedDiagram | null => {
     if (code.slice(-1) != '\n') {
         code += '\n';
     }
@@ -38,26 +38,6 @@ export function parseDiagram(code: string): ParsedDiagram | null {
     console.log(`position: ${result.ctx.index}`);
 
     return null;
-}
-
-const newParsedDiagram = (participants: Participant[], messages: Message[]): ParsedDiagram => {
-    return {
-        participants: participants,
-        messages: messages,
-    };
-};
-
-const newParticipant = (name: string): Participant => {
-    return {
-        name
-    };
-};
-
-const newMessage = (from: string, to: string): Message => {
-    return {
-        from,
-        to,
-    };
 };
 
 const simpleParticipantName = regex(/[a-zA-Z0-9]+/g, 'participant name');
@@ -72,10 +52,10 @@ const comment = discard(
     ])
 );
 
-const restOfLine = sequence([
+const restOfLine = discard(sequence([
     optional(ws),
     any([comment, lineEnd])
-]);
+]));
 
 
 const participant = map(
@@ -114,7 +94,7 @@ const diagram = map(
         // participants must come before messages
         filter_nulls(
             many(any([
-                comment,
+                restOfLine,
                 participant,
                 discard(lineEnd),
             ]))
@@ -123,7 +103,7 @@ const diagram = map(
         terminated(
             filter_nulls(
                 many(any([
-                    comment,
+                    restOfLine,
                     message,
                     discard(lineEnd)
                 ])),
@@ -134,18 +114,39 @@ const diagram = map(
     ({ first, second }) => makeDiagram(first, second)
 );
 
+const newParsedDiagram = (participants: Participant[], messages: Message[]): ParsedDiagram => {
+    return {
+        participants: participants,
+        messages: messages,
+    };
+};
+
+const newParticipant = (name: string): Participant => {
+    return {
+        name
+    };
+};
+
+const newMessage = (from: string, to: string): Message => {
+    return {
+        from,
+        to,
+    };
+};
+
 const makeDiagram = (participants: Participant[], messages: Message[]): ParsedDiagram => {
     const resolvedParticipants = extractParticipants(participants, messages);
     return newParsedDiagram(resolvedParticipants, messages);
 };
 
 const extractParticipants = (participants: Participant[], messages: Message[]): Participant[] => {
+    const nameIs = (str: string) => (p: Participant) => p.name == str;
     for (const message of messages) {
-        if (participants.findIndex(p => p.name === message.from) === -1) {
+        if (participants.findIndex(nameIs(message.from)) === -1) {
             participants.push({ name: message.from });
         }
 
-        if (participants.findIndex(p => p.name === message.to) === -1) {
+        if (participants.findIndex(nameIs(message.to)) === -1) {
             participants.push({ name: message.to });
         }
     }

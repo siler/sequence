@@ -12,58 +12,58 @@ import { Graphics } from '.';
 //   mousemove(p: Vec): void
 // }
 
-export function newBrowserCanvas(
+export const newBrowserCanvas = (
     canvas: HTMLCanvasElement
     // callbacks?: Callbacks
-): Graphics {
+): Graphics => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const ctx = canvas.getContext('2d')!;
     const twopi = 2 * 3.1416;
 
-    // var mousePos = { x: 0, y: 0 }
+    // let mousePos = { x: 0, y: 0 };
 
-    // function mouseEventToPos(event: MouseEvent) {
-    //     var e = canvas
+    // mouseEventToPos(event: MouseEvent) => {
+    //     var e = canvas;
     //     return {
     //         x: event.clientX - e.getBoundingClientRect().left - e.clientLeft + e.scrollLeft,
     //         y: event.clientY - e.getBoundingClientRect().top - e.clientTop + e.scrollTop,
-    //     }
-    // }
+    //     };
+    // };
 
     // if (callbacks) {
-    //     canvas.addEventListener('mousedown', function (event) {
+    //     canvas.addEventListener('mousedown', (event) => {
     //         if (callbacks.mousedown) callbacks.mousedown(mouseEventToPos(event))
     //     })
 
-    //     canvas.addEventListener('mouseup', function (event) {
+    //     canvas.addEventListener('mouseup', (event) => {
     //         if (callbacks.mouseup) callbacks.mouseup(mouseEventToPos(event))
     //     })
 
-    //     canvas.addEventListener('mousemove', function (event) {
+    //     canvas.addEventListener('mousemove', (event) => {
     //         mousePos = mouseEventToPos(event)
     //         if (callbacks.mousemove) callbacks.mousemove(mouseEventToPos(event))
     //     })
     // }
 
     const chainable = {
-        stroke: function () {
+        stroke: () => {
             ctx.stroke();
             return chainable;
         },
 
-        fill: function () {
+        fill: () => {
             ctx.fill();
             return chainable;
         },
 
-        fillAndStroke: function () {
+        fillAndStroke: () => {
             ctx.fill();
             ctx.stroke();
             return chainable;
         },
     };
 
-    function tracePath(path: Vector[], inOffset?: Vector, inScale?: number) {
+    const tracePath = (path: Vector[], inOffset?: Vector, inScale?: number) => {
         const scale = inScale || 1;
         const offset = inOffset || { x: 0, y: 0 };
 
@@ -79,43 +79,43 @@ export function newBrowserCanvas(
         ctx.restore();
 
         return chainable;
-    }
+    };
 
     return {
-        arc: function (x, y, radius, start, stop) {
+        arc: (x, y, radius, start, stop) => {
             ctx.beginPath();
             ctx.moveTo(x, y);
             ctx.arc(x, y, radius, start, stop);
             return chainable;
         },
 
-        arcTo: function (x1, y1, x2, y2, radius) {
+        arcTo: (x1, y1, x2, y2, radius) => {
             return ctx.arcTo(x1, y1, x2, y2, radius);
         },
 
-        beginPath: function () {
+        beginPath: () => {
             ctx.beginPath();
             return chainable;
         },
 
-        circle: function (center, radius) {
+        circle: (center, radius) => {
             ctx.beginPath();
             ctx.arc(center.x, center.y, radius, 0, twopi);
             return chainable;
         },
 
-        circuit: function (path, offset, scale) {
+        circuit: (path, offset, scale) => {
             tracePath(path, offset, scale);
             ctx.closePath();
 
             return chainable;
         },
 
-        clear: function () {
+        clear: () => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
         },
 
-        ellipse: function (center, width, height, start, stop) {
+        ellipse: (center, width, height, start, stop) => {
             const eStart = start || 0;
             const eStop = stop || twopi;
 
@@ -129,51 +129,51 @@ export function newBrowserCanvas(
             return chainable;
         },
 
-        fillStyle: function (fill) {
+        fillStyle: (fill) => {
             ctx.fillStyle = fill;
         },
 
-        fillText: function (text, x, y) {
+        fillText: (text, x, y) => {
             ctx.fillText(text, x, y);
             return chainable;
         },
 
-        height: function () {
+        height: () => {
             return canvas.height;
         },
 
-        lineCap: function (cap) {
+        lineCap: (cap) => {
             ctx.lineCap = cap;
         },
 
-        lineJoin: function (join) {
+        lineJoin: (join) => {
             ctx.lineJoin = join;
         },
 
-        lineTo: function (x, y) {
+        lineTo: (x, y) => {
             ctx.lineTo(x, y);
             return chainable;
         },
 
-        lineWidth: function (width) {
+        lineWidth: (width) => {
             ctx.lineWidth = width;
         },
 
-        measureText: function (text) {
+        measureText: (text) => {
             return ctx.measureText(text);
         },
 
-        // mousePos: function () {
+        // mousePos: () => {
         //     return mousePos
         // },
 
-        moveTo: function (x, y) {
+        moveTo: (x, y) => {
             ctx.moveTo(x, y);
         },
 
         path: tracePath,
 
-        rect: function (x, y, width, height) {
+        rect: (x, y, width, height) => {
             ctx.beginPath();
             ctx.moveTo(x, y);
             ctx.lineTo(x + width, y);
@@ -184,17 +184,17 @@ export function newBrowserCanvas(
             return chainable;
         },
 
-        restore: function () {
+        restore: () => {
             ctx.restore();
         },
 
-        roundRect: function (
+        roundRect: (
             x: number,
             y: number,
             width: number,
             height: number,
             radius: number,
-        ) {
+        ) => {
             ctx.beginPath();
             ctx.moveTo(x + radius, y);
             ctx.arcTo(x + width, y, x + width, y + radius, radius);
@@ -209,44 +209,44 @@ export function newBrowserCanvas(
             return chainable;
         },
 
-        save: function () {
+        save: () => {
             ctx.save();
         },
 
-        scale: function (x, y) {
+        scale: (x, y) => {
             ctx.scale(x, y);
         },
 
         // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
-        setData: function (_name: string, _value: string) { },
+        setData: (_name: string, _value: string) => { },
 
-        setFont: function (family, size, weight, style) {
-            ctx.font = `${weight} ${style} ${size}pt ${family}, Helvetica, sans-serif`;
+        setFont: (family, sizePt, weight, style) => {
+            ctx.font = `${weight} ${style} ${sizePt}pt ${family}, Helvetica, sans-serif`;
         },
 
-        setLineDash: function (segments: number[]) {
+        setLineDash: (segments: number[]) => {
             ctx.setLineDash(segments);
         },
 
-        stroke: function () {
+        stroke: () => {
             ctx.stroke();
         },
 
-        strokeStyle: function (stroke) {
+        strokeStyle: (stroke) => {
             ctx.strokeStyle = stroke;
         },
 
-        textAlign: function (align) {
+        textAlign: (align) => {
             ctx.textAlign = align as CanvasTextAlign;
         },
 
-        translate: function (x, y) {
+        translate: (x, y) => {
             ctx.translate(x, y);
         },
 
-        width: function () {
+        width: () => {
             return canvas.width;
         },
 
     };
-}
+};

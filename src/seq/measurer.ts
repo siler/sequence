@@ -1,11 +1,11 @@
-import { Extent } from './layout';
+import { Extent, newExtent } from './layout';
 import { Font, FontStyle, FontWeight } from './style';
 
 export interface Measurer {
     ascentExtent(text: string, font: Font): Extent;
 }
 
-export function fromHtmlCanvas(canvas: HTMLCanvasElement): Measurer {
+export const fromHtmlCanvas = (canvas: HTMLCanvasElement): Measurer => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const ctx = canvas.getContext('2d')!;
 
@@ -24,7 +24,7 @@ export function fromHtmlCanvas(canvas: HTMLCanvasElement): Measurer {
     return {
         ascentExtent: (text: string, font: Font): Extent => {
             const m = metrics(text, font);
-            return new Extent(m.width, m.actualBoundingBoxAscent);
+            return newExtent(m.width, m.actualBoundingBoxAscent);
         },
     };
-}
+};

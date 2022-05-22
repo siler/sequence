@@ -3,9 +3,9 @@ import { Box, Extent } from './layout';
 import { LifelineStyle, MessageStyle as SignalStyle } from './style';
 
 export interface Diagram {
-    lifelines: Lifeline[],
-    signals: Signal[],
-    size: Extent,
+    readonly lifelines: Lifeline[],
+    readonly signals: Signal[],
+    readonly size: Extent,
 }
 
 export class Lifeline {
@@ -20,21 +20,21 @@ export class Lifeline {
     /**
      * Center X of the lifeline
      */
-    centerX(): number {
+    centerX = (): number => {
         return Math.round((this.box.position.x + this.box.right()) / 2);
-    }
+    };
 
     /**
      * the x position of the bottom of the lifeline, including the lifeline itself
      */
-    bottom(): number {
+    bottom = (): number => {
         return this.box.bottom() + this.height;
-    }
+    };
 
     /**
      * draw the Lifeline
      */
-    draw(graphics: Graphics) {
+    draw = (graphics: Graphics) => {
         const rect = this.box.depad(this.style.margin);
 
         graphics.save();
@@ -68,7 +68,7 @@ export class Lifeline {
         graphics.moveTo(centerX, rect.bottom());
         graphics.lineTo(centerX, this.bottom()).stroke();
         graphics.restore();
-    }
+    };
 }
 
 export type Direction = 'ltr' | 'rtl' | 'none';
@@ -83,7 +83,7 @@ export class Signal {
     /**
      * draw the Signal
      */
-    draw(graphics: Graphics) {
+    draw = (graphics: Graphics) => {
         const padded = this.box.depad(this.style.margin);
         const leftX = padded.position.x;
         const rightX = padded.right();
@@ -121,5 +121,5 @@ export class Signal {
 
         graphics.stroke();
         graphics.restore();
-    }
+    };
 }

@@ -1,10 +1,12 @@
 import React from 'react';
 import SeqWorkspace from './SeqWorkspace';
 
-export default function App() {
+const App = () => {
     return (
         <div className="app">
             <SeqWorkspace />
         </div>
     );
-}
+};
+
+export default App;

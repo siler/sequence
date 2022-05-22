@@ -1,26 +1,33 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Editor from './Editor';
 import Split from 'react-split';
-import { basicSetup } from '@codemirror/basic-setup';
 import { EditorView } from '@codemirror/view';
 import { draw } from './seq';
 import './SeqWorkspace.css';
 
-export default function SeqWorkspace() {
+const diagramKey = 'seq-diagram';
+
+/**
+ * component for the seq workspace
+ * 
+ * includes a primary workspace split between an editor and a renderer.
+ */
+const SeqWorkspace = () => {
+    // load and initialize the workspace text, then set it up for persistence
     const [text, setText] = useState('');
-    const canvas = useRef<HTMLCanvasElement | null>(null);
-
-    const extensions = [basicSetup, EditorView.darkTheme.of(true)];
-    const onUpdate = (newCode: string) => { setText(newCode); };
-
     useMemo(() => {
-        const diagram = localStorage.getItem('seq-diagram');
-        setText(diagram ? diagram : '');
+        const diagram = localStorage.getItem(diagramKey);
+        if (diagram) {
+            setText(diagram);
+        }
     }, []);
 
     useEffect(() => {
-        localStorage.setItem('seq-diagram', text);
+        localStorage.setItem(diagramKey, text);
     }, [text]);
+
+    // configure the canvas ref and wire up drawing
+    const canvas = useRef<HTMLCanvasElement | null>(null);
 
     useEffect(() => {
         if (canvas.current) {
@@ -31,15 +38,20 @@ export default function SeqWorkspace() {
 
     return (
         <Split
+            sizes={[30, 70]}
             className='seq-split'
-            direction='horizontal'
-            minSize={100}
-            expandToMin={true}
-            gutterAlign='center' >
-            <Editor extensions={extensions} onUpdate={onUpdate} initialText={text} />
+            minSize={200}
+            expandToMin={true} >
+            <Editor
+                extensions={[EditorView.darkTheme.of(true)]}
+                onUpdate={setText}
+                text={text}
+            />
             <div>
                 <canvas ref={canvas} />
             </div>
         </Split>
     );
-}
+};
+
+export default SeqWorkspace;
