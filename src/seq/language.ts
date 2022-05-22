@@ -1,4 +1,4 @@
-import { any, discard, eof, filter_nulls, many, map, optional, pair, regex, sequence, str, terminated } from "./parse";
+import { any, discard, eof, filter_nulls, many, map, optional, pair, regex, sequence, str, terminated } from './parse';
 
 // A parsed sequence diagram with ordered lists of participants and messages
 export interface ParsedDiagram {
@@ -6,22 +6,9 @@ export interface ParsedDiagram {
     readonly messages: Message[];
 }
 
-const newParsedDiagram = (participants: Participant[], messages: Message[]) => {
-    return {
-        participants: participants,
-        messages: messages,
-    }
-}
-
 // A named participant
 export interface Participant {
     readonly name: string;
-}
-
-const newParticipant = (name: string): Participant => {
-    return {
-        name
-    }
 }
 
 // A message with a sender and a receiver
@@ -30,28 +17,41 @@ export interface Message {
     readonly to: string;
 }
 
+// parse a SequenceDiagram from a string
+export function parseDiagram(code: string): ParsedDiagram | null {
+    const parsedDiagram = diagram({ code, index: 0 });
+    if (parsedDiagram.success) {
+        return parsedDiagram.value;
+    }
+
+    console.log(parsedDiagram.description);
+
+    return null;
+}
+
+const newParsedDiagram = (participants: Participant[], messages: Message[]) => {
+    return {
+        participants: participants,
+        messages: messages,
+    };
+};
+
+const newParticipant = (name: string): Participant => {
+    return {
+        name
+    };
+};
+
 const newMessage = (from: string, to: string): Message => {
     return {
         from,
         to,
-    }
-}
+    };
+};
 
-// parse a SequenceDiagram from a string
-export const parse = (text: string): ParsedDiagram | null => {
-    const d = diagram({ text: text, index: 0 });
-    if (d.success) {
-        return d.value
-    }
-
-    console.log(d.description)
-
-    return null
-}
-
-const simpleParticipantName = regex(/[a-zA-Z0-9]+/g, "participant name");
-const ws = regex(/[ \t]+/g, "ws");
-const lineEnd = regex(/\n/g, "line ending");
+const simpleParticipantName = regex(/[a-zA-Z0-9]+/g, 'participant name');
+const ws = regex(/[ \t]+/g, 'ws');
+const lineEnd = regex(/\n/g, 'line ending');
 
 const comment = discard(
     sequence([
@@ -59,19 +59,27 @@ const comment = discard(
         regex(/[^\n]*/g, 'many not newline'),
         lineEnd
     ])
-)
+);
+
+const restOfLine = sequence([
+    optional(ws),
+    any([comment, lineEnd])
+]);
+
 
 const participant = map(
     terminated(
         filter_nulls(
             sequence([
-
+                str('participant'),
+                discard(ws),
+                simpleParticipantName,
             ])
         ),
-        discard(lineEnd)
+        restOfLine
     ),
-    ([participantName]) => { return newParticipant(participantName!); }
-)
+    ([participantName]) => { return newParticipant(participantName); }
+);
 
 const message = map(
     terminated(
@@ -84,13 +92,11 @@ const message = map(
                 simpleParticipantName,
             ])
         ),
-        any([
-            discard(sequence([optional(ws), comment])),
-            lineEnd
-        ])
+        restOfLine
     ),
-    ([from, _sep, to]: string[]) => { return newMessage(from!, to!); }
-)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    ([from, _, to]: string[]) => { return newMessage(from, to); }
+);
 
 const diagram = map(
     pair(
@@ -120,7 +126,7 @@ const diagram = map(
 const makeDiagram = (participants: Participant[], messages: Message[]): ParsedDiagram => {
     const resolvedParticipants = extractParticipants(participants, messages);
     return newParsedDiagram(resolvedParticipants, messages);
-}
+};
 
 const extractParticipants = (participants: Participant[], messages: Message[]): Participant[] => {
     for (const message of messages) {
@@ -129,9 +135,9 @@ const extractParticipants = (participants: Participant[], messages: Message[]): 
         }
 
         if (participants.findIndex(p => p.name === message.to) === -1) {
-            participants.push({ name: message.to })
+            participants.push({ name: message.to });
         }
     }
 
     return participants;
-}
+};

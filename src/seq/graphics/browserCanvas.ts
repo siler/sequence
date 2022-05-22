@@ -1,5 +1,5 @@
-import { Vector } from '.'
-import { Graphics } from '.'
+import { Vector } from '.';
+import { Graphics } from '.';
 // import { Vec } from './vector'
 
 // interface ICanvasGraphics extends Graphics {
@@ -12,13 +12,15 @@ import { Graphics } from '.'
 //   mousemove(p: Vec): void
 // }
 
-export function GraphicsCanvas(
+export function BrowserCanvas(
     canvas: HTMLCanvasElement
     // callbacks?: Callbacks
 ): Graphics {
-    var ctx = canvas.getContext('2d')!;
-    // var mousePos = { x: 0, y: 0 }
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const ctx = canvas.getContext('2d')!;
     const twopi = 2 * 3.1416;
+
+    // var mousePos = { x: 0, y: 0 }
 
     // function mouseEventToPos(event: MouseEvent) {
     //     var e = canvas
@@ -43,23 +45,23 @@ export function GraphicsCanvas(
     //     })
     // }
 
-    var chainable = {
+    const chainable = {
         stroke: function () {
-            ctx.stroke()
-            return chainable
+            ctx.stroke();
+            return chainable;
         },
 
         fill: function () {
-            ctx.fill()
-            return chainable
+            ctx.fill();
+            return chainable;
         },
 
         fillAndStroke: function () {
-            ctx.fill()
-            ctx.stroke()
-            return chainable
+            ctx.fill();
+            ctx.stroke();
+            return chainable;
         },
-    }
+    };
 
     function tracePath(path: Vector[], inOffset?: Vector, inScale?: number) {
         const scale = inScale || 1;
@@ -71,18 +73,15 @@ export function GraphicsCanvas(
         ctx.scale(scale, scale);
         ctx.moveTo(path[0].x, path[0].y);
 
-        for (var i = 1; i < path.length; i++) {
+        for (let i = 1; i < path.length; i++) {
             ctx.lineTo(path[i].x, path[i].y);
         }
-        ctx.restore()
+        ctx.restore();
 
-        return chainable
+        return chainable;
     }
 
     return {
-        // mousePos: function () {
-        //     return mousePos
-        // },
         arc: function (x, y, radius, start, stop) {
             ctx.beginPath();
             ctx.moveTo(x, y);
@@ -164,6 +163,10 @@ export function GraphicsCanvas(
             return ctx.measureText(text);
         },
 
+        // mousePos: function () {
+        //     return mousePos
+        // },
+
         moveTo: function (x, y) {
             ctx.moveTo(x, y);
         },
@@ -214,7 +217,8 @@ export function GraphicsCanvas(
             ctx.scale(x, y);
         },
 
-        setData: function (name: string, value: string) { },
+        // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
+        setData: function (_name: string, _value: string) { },
 
         setFont: function (family, size, weight, style) {
             ctx.font = `${weight} ${style} ${size}pt ${family}, Helvetica, sans-serif`;
@@ -244,5 +248,5 @@ export function GraphicsCanvas(
             return canvas.width;
         },
 
-    }
+    };
 }

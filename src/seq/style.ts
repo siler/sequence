@@ -1,4 +1,4 @@
-import { Extent } from './layout'
+import { Extent } from './layout';
 
 export interface Style {
     frame: FrameStyle,
@@ -16,35 +16,35 @@ export interface LifelineStyle {
 
 export class Padding {
     constructor(
-        public top: number, 
-        public right: number, 
-        public bottom: number, 
+        public top: number,
+        public right: number,
+        public bottom: number,
         public left: number
-    ) {}
+    ) { }
 
     horizontal = (): number => {
         return this.left + this.right;
-    }
+    };
 
     vertical = (): number => {
         return this.top + this.bottom;
-    }
+    };
 
     pad = (extent: Extent): Extent => {
         return new Extent(
             extent.width + this.horizontal(),
             extent.height + this.vertical()
         );
-    }
+    };
 }
 
 export const newPadTbLr = (tb: number, lr: number): Padding => {
     return new Padding(tb, lr, tb, lr);
-}
+};
 
 export const newPadAll = (padding: number): Padding => {
     return new Padding(padding, padding, padding, padding);
-}
+};
 
 export const defaultStyle = () => {
     return {
@@ -56,4 +56,4 @@ export const defaultStyle = () => {
             margin: newPadAll(10),
         }
     };
-}
+};
