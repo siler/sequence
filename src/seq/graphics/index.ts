@@ -124,7 +124,7 @@ export interface Graphics {
     /**
      * retrieve rendered size information about the provided text
      */
-    measureText(text: string): { width: number }
+    measureText(text: string): TextMetrics
 
     /**
      * begin a new sub-path at (x, y)

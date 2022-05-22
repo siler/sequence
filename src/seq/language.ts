@@ -19,17 +19,28 @@ export interface Message {
 
 // parse a SequenceDiagram from a string
 export function parseDiagram(code: string): ParsedDiagram | null {
-    const parsedDiagram = diagram({ code, index: 0 });
-    if (parsedDiagram.success) {
-        return parsedDiagram.value;
+    if (code.slice(-1) != '\n') {
+        code += '\n';
     }
 
-    console.log(parsedDiagram.description);
+    const result = diagram({ code, index: 0 });
+    if (result.success) {
+        return result.value;
+    }
+
+    let error = result.description;
+    let fail = result.cause;
+    while (fail !== null) {
+        error += ` caused by: ${fail.description}`;
+        fail = fail.cause;
+    }
+    console.log(`parse error: ${error}`);
+    console.log(`position: ${result.ctx.index}`);
 
     return null;
 }
 
-const newParsedDiagram = (participants: Participant[], messages: Message[]) => {
+const newParsedDiagram = (participants: Participant[], messages: Message[]): ParsedDiagram => {
     return {
         participants: participants,
         messages: messages,
@@ -71,7 +82,7 @@ const participant = map(
     terminated(
         filter_nulls(
             sequence([
-                str('participant'),
+                discard(str('participant')),
                 discard(ws),
                 simpleParticipantName,
             ])

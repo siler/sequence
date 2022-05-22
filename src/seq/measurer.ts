@@ -1,7 +1,6 @@
 import { Extent } from './layout';
 
 export interface Measurer {
-    metrics(text: string): TextMetrics;
     ascentExtent(text: string): Extent;
 }
 
@@ -14,11 +13,9 @@ export function fromHtmlCanvas(canvas: HTMLCanvasElement): Measurer {
     };
 
     return {
-        metrics,
-
         ascentExtent: (text: string): Extent => {
             const m = metrics(text);
             return new Extent(m.width, m.actualBoundingBoxAscent);
-        }
+        },
     };
 }

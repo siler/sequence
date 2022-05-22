@@ -2,7 +2,8 @@ import { Extent } from './layout';
 
 export interface Style {
     frame: FrameStyle,
-    lifeline: LifelineStyle
+    lifeline: LifelineStyle,
+    message: MessageStyle,
 }
 
 export interface FrameStyle {
@@ -10,6 +11,11 @@ export interface FrameStyle {
 }
 
 export interface LifelineStyle {
+    padding: Padding,
+    margin: Padding,
+}
+
+export interface MessageStyle {
     padding: Padding,
     margin: Padding,
 }
@@ -46,7 +52,7 @@ export const newPadAll = (padding: number): Padding => {
     return new Padding(padding, padding, padding, padding);
 };
 
-export const defaultStyle = () => {
+export const defaultStyle = (): Style => {
     return {
         frame: {
             padding: newPadAll(10),
@@ -54,6 +60,10 @@ export const defaultStyle = () => {
         lifeline: {
             padding: newPadAll(10),
             margin: newPadAll(10),
-        }
+        },
+        message: {
+            padding: newPadAll(10),
+            margin: newPadAll(5),
+        },
     };
 };

@@ -1,88 +1,81 @@
-import { EditorState, Extension, } from "@codemirror/state"
-import { EditorView, PluginValue, ViewPlugin, ViewUpdate } from "@codemirror/view"
-import { useCallback, useEffect, useState } from 'react';
+import { EditorState, Extension, Text } from '@codemirror/state';
+import { EditorView, PluginValue, ViewPlugin, ViewUpdate } from '@codemirror/view';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { debounce } from '../util';
 
-const seqAstParser = <V extends PluginValue>(): ViewPlugin<V> => {
+const theme = EditorView.theme({
+    '&': {
+        color: 'white',
+        backgroundColor: '#034'
+    },
+    '.cm-content': {
+        caretColor: '#0e9'
+    },
+    '&.cm-focused .cm-cursor': {
+        borderLeftColor: '#0e9'
+    },
+    '&.cm-focused .cm-selectionBackground, ::selection': {
+        backgroundColor: '#074'
+    },
+    '.gutter': {
+        backgroundColor: '#045',
+        color: '#ddd',
+        border: 'none'
+    }
+}, { dark: true });
+
+export type OnEditorUpdate = { (content: string): void };
+
+/**
+ * 
+ */
+export default function useEditor(extensions: Extension[], onUpdate: OnEditorUpdate, initialText: string | null) {
+    const [text, setText] = useState(initialText ? initialText : '');
+    const parent = useRef(null);
+
+    const notifier = useMemo(() => updateNotifier([onUpdate, setText]), [onUpdate, setText]);
+    const editorState = useMemo(() => {
+        return EditorState.create({
+            doc: text,
+            extensions: [notifier, theme, ...extensions],
+        });
+    }, [notifier, theme, extensions]);
+
+
+    useEffect(() => {
+        if (!parent.current) {
+            return;
+        }
+
+        const view = new EditorView({
+            state: editorState,
+            parent: parent.current,
+        });
+
+        return () => {
+            view.destroy();
+        };
+    }, [parent]);
+
+    return parent;
+}
+
+const updateNotifier = <V extends PluginValue>(onUpdate: OnEditorUpdate[]): ViewPlugin<V> => {
     return ViewPlugin.fromClass(class {
         view: EditorView;
+        debounce: (arg: Text) => void;
 
         constructor(view: EditorView) {
             this.view = view;
+            this.debounce = debounce((doc) => {
+                onUpdate.map((f) => f(doc.toJSON().join('\n')));
+            }, 1000);
         }
 
         update(update: ViewUpdate) {
             if (update.docChanged) {
-                const text = this.view.state.doc;
-
-                var lines = text.toJSON();
-
-                // do update thing
+                this.debounce(this.view.state.doc);
             }
         }
     });
-}
-
-// Returns a callback ref which attaches an instance of the Editor.
-// https://reactjs.org/docs/refs-and-the-dom.html#callback-refs
-export default function useEditor(extensions: Extension[]) {
-    const [element, setElement] = useState<HTMLElement>();
-
-    useEffect(() => {
-        if (!element) {
-            // console.log("no editor element");
-            return
-        };
-
-        // console.log("initializing editor view");
-
-        const init = "";
-
-        const state = EditorState.create({
-            doc: init,
-            extensions: [theme, ...extensions],
-        });
-
-        const view = new EditorView({
-            state: state,
-            parent: element,
-        });
-
-        return () => {
-            // console.log("destroying editor view");
-            view.destroy();
-        }
-    }, [element, extensions]);
-
-    const ref = useCallback((node: HTMLElement | null) => {
-        if (node) {
-            setElement(node);
-        } else {
-            setElement(undefined);
-        };
-
-    }, []);
-
-    return { ref }
-}
-
-
-const theme = EditorView.theme({
-    "&": {
-        color: "white",
-        backgroundColor: "#034"
-    },
-    ".cm-content": {
-        caretColor: "#0e9"
-    },
-    "&.cm-focused .cm-cursor": {
-        borderLeftColor: "#0e9"
-    },
-    "&.cm-focused .cm-selectionBackground, ::selection": {
-        backgroundColor: "#074"
-    },
-    ".cm-gutters": {
-        backgroundColor: "#045",
-        color: "#ddd",
-        border: "none"
-    }
-}, { dark: true })
+};

@@ -13,5 +13,9 @@ export const render = (graphics: Graphics, diagram: Diagram, scale?: number) => 
         lifeline.draw(graphics);
     }
 
+    for (const signal of diagram.signals) {
+        signal.draw(graphics);
+    }
+
     graphics.restore();
 };

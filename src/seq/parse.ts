@@ -9,11 +9,11 @@ interface Context {
 }
 
 // our result types
-type Result<T> = Success<T> | Failure;
+export type Result<T> = Success<T> | Failure;
 
 // on success we'll return a value of type T, and a new Ctx
 // (position in the string) to continue parsing from
-interface Success<T> {
+export interface Success<T> {
     readonly success: true;
     readonly value: T;
     // the context after the success
@@ -21,11 +21,13 @@ interface Success<T> {
 }
 
 // when we fail we want to know where and why
-interface Failure {
+export interface Failure {
     readonly success: false;
     readonly description: string;
     readonly ctx: Context;
     readonly cause: Failure | null,
+
+    context(text: string): Failure;
 }
 
 // some convenience methods to build `Result`s for us
@@ -34,7 +36,15 @@ function success<T>(ctx: Context, value: T): Success<T> {
 }
 
 function failure(ctx: Context, description: string, cause: Failure | null = null): Failure {
-    return { success: false, description, ctx, cause };
+    return {
+        success: false,
+        description,
+        ctx,
+        cause,
+        context: function(text) {
+            return failure(ctx, text, this);
+        }
+    };
 }
 
 // parse an exact string
@@ -42,14 +52,14 @@ export function str(match: string): Parser<string> {
     return ctx => {
         const endIdx = ctx.index + match.length;
         if (endIdx >= ctx.code.length) {
-            return failure(ctx, match);
+            return failure(ctx, `matching "${match}"`);
         }
 
         if (ctx.code.substring(ctx.index, endIdx) === match) {
             return success({ ...ctx, index: endIdx }, match);
         }
 
-        return failure(ctx, match);
+        return failure(ctx, `matching "${match}"`);
     };
 }
 
@@ -63,7 +73,7 @@ export function regex(re: RegExp, expected: string): Parser<string> {
             return success({ ...ctx, index: ctx.index + res[0].length }, res[0]);
         }
 
-        return failure(ctx, expected);
+        return failure(ctx, `matching ${expected}`);
     };
 }
 
@@ -73,10 +83,11 @@ export function eof(): Parser<null> {
             return success(ctx, null);
         }
 
-        return failure(ctx, 'eof');
+        return failure(ctx, 'matching eof');
     };
 }
 
+// requires parser, then discards the result
 export function discard<T>(parser: Parser<T>): Parser<null> {
     return ctx => {
         const res = parser(ctx);
@@ -93,7 +104,7 @@ export function any<T>(parsers: Parser<T>[]): Parser<T> {
     return ctx => {
         let furthestRes: Failure | null = null;
 
-        if (parsers.length == 0) {
+        if (parsers.length === 0) {
             return failure(ctx, 'any');
         }
 
@@ -149,12 +160,12 @@ export function pair<A, B>(parserA: Parser<A>, parserB: Parser<B>): Parser<Pair<
     return ctx => {
         const resA = parserA(ctx);
         if (!resA.success) {
-            return failure(resA.ctx, 'pair', resA);
+            return failure(resA.ctx, 'pair first', resA);
         }
 
         const resB = parserB(resA.ctx);
         if (!resB.success) {
-            return failure(resB.ctx, 'pair', resB);
+            return failure(resB.ctx, 'pair second', resB);
         }
 
         return success(resB.ctx, { first: resA.value, second: resB.value });
@@ -166,12 +177,12 @@ export function terminated<A, B>(parserA: Parser<A>, parserB: Parser<B>): Parser
     return ctx => {
         const resA = parserA(ctx);
         if (!resA.success) {
-            return failure(resA.ctx, 'terminated', resA);
+            return failure(resA.ctx, 'terminated first', resA);
         }
 
         const resB = parserB(resA.ctx);
         if (!resB.success) {
-            return failure(resB.ctx, 'terminated', resB);
+            return failure(resB.ctx, 'terminated second', resB);
         }
 
         return success(resB.ctx, resA.value);

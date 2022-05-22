@@ -1,0 +1,27 @@
+.seq-split {
+    display: flex;
+    flex-direction: row;
+}
+
+.cm-scroller {
+    overflow: auto;
+}
+
+.cm-editor {
+    height: 100vh;
+}
+
+.gutter {
+    background-color: #eee;
+
+    background-repeat: no-repeat;
+    background-position: 50%;
+}
+
+.gutter.gutter-horizontal {
+    cursor: col-resize;
+}
+
+.gutter.gutter-vertical {
+    cursor: row-resize;
+}

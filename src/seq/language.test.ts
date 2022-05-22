@@ -1,4 +1,6 @@
-import { parse } from './language';
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+
+import { parseDiagram } from './language';
 
 // this test should be maintained but kept this simple
 test('parses a simple diagram', () => {
@@ -10,7 +12,7 @@ Cynthia -> Alan
 `;
 
     // when
-    const res = parse(input);
+    const res = parseDiagram(input);
 
     // then
     expect(res).not.toBeNull();
@@ -43,7 +45,7 @@ int3gra->zEr0 # oh my glob
 `;
 
     // when
-    const res = parse(input);
+    const res = parseDiagram(input);
     const name1 = 'zEr0';
     const name2 = 'int3gra';
     const name3 = '4l1c3';

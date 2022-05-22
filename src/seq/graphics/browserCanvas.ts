@@ -12,7 +12,7 @@ import { Graphics } from '.';
 //   mousemove(p: Vec): void
 // }
 
-export function BrowserCanvas(
+export function newBrowserCanvas(
     canvas: HTMLCanvasElement
     // callbacks?: Callbacks
 ): Graphics {

@@ -1,7 +1,12 @@
 import { Graphics } from './graphics';
+import { newBrowserCanvas } from './graphics/browserCanvas';
 import { parseDiagram } from './language';
-import { layout } from './layout';
+import { Extent, layout } from './layout';
 import { render } from './render';
+
+export function draw(code: string, canvas: HTMLCanvasElement, scale: number) {
+    parseAndRender(code, newBrowserCanvas(canvas), canvas, scale);
+}
 
 export function parseAndRender(code: string, graphics: Graphics, canvas: HTMLCanvasElement, scale: number) {
     const parsedDiagram = parseDiagram(code);
@@ -10,5 +15,11 @@ export function parseAndRender(code: string, graphics: Graphics, canvas: HTMLCan
     }
 
     const diagram = layout(parsedDiagram, canvas);
+    fitCanvasSize(canvas, diagram.size, scale);
     render(graphics, diagram, scale);
+}
+
+function fitCanvasSize(canvas: HTMLCanvasElement, size: Extent, zoom: number) {
+    canvas.width = size.width * zoom;
+    canvas.height = size.height * zoom;
 }
