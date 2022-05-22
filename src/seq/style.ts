@@ -13,11 +13,35 @@ export interface FrameStyle {
 export interface LifelineStyle {
     padding: Padding,
     margin: Padding,
+    font: Font,
+    boxLineWidth: number,
+    lineWidth: number,
 }
 
 export interface MessageStyle {
     padding: Padding,
     margin: Padding,
+    lineWidth: number,
+    arrowWidth: number,
+    arrowHeight: number,
+}
+
+export type FontWeight = 'normal' | 'bold';
+export type FontStyle = 'normal' | 'italic';
+
+export interface Font {
+    family: string,
+    size: number,
+    weight: FontWeight,
+    style: FontStyle,
+}
+
+export function newFont(
+    family: string, size: number,
+    weight: FontWeight = 'normal',
+    style: FontStyle = 'normal'
+) {
+    return { family, size, weight, style };
 }
 
 export class Padding {
@@ -60,10 +84,16 @@ export const defaultStyle = (): Style => {
         lifeline: {
             padding: newPadAll(10),
             margin: newPadAll(10),
+            font: newFont('Helvetica', 14),
+            boxLineWidth: 2,
+            lineWidth: 2,
         },
         message: {
             padding: newPadAll(10),
             margin: newPadAll(5),
+            lineWidth: 2,
+            arrowWidth: 7.5,
+            arrowHeight: 3,
         },
     };
 };

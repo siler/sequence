@@ -36,25 +36,38 @@ export class Lifeline {
      */
     draw(graphics: Graphics) {
         const rect = this.box.depad(this.style.margin);
+
+        graphics.save();
+        graphics.lineWidth(this.style.boxLineWidth);
         graphics.rect(
             rect.position.x,
             rect.position.y,
             rect.extent.width,
             rect.extent.height
         ).stroke();
+        graphics.restore();
 
         const text = rect.depad(this.style.padding);
+        graphics.save();
+        graphics.setFont(
+            this.style.font.family, this.style.font.size,
+            this.style.font.weight, this.style.font.style
+        );
         const metrics = graphics.measureText(this.name);
         graphics.fillText(
             this.name,
             text.position.x,
             text.position.y + metrics.actualBoundingBoxAscent
         );
+        graphics.restore();
 
         const centerX = this.centerX();
+        graphics.save();
+        graphics.lineWidth(this.style.lineWidth);
         graphics.beginPath();
         graphics.moveTo(centerX, rect.bottom());
         graphics.lineTo(centerX, this.bottom()).stroke();
+        graphics.restore();
     }
 }
 
@@ -75,29 +88,38 @@ export class Signal {
         const leftX = padded.position.x;
         const rightX = padded.right();
         const y = padded.bottom();
+        const width = this.style.lineWidth;
+        const arrowWidth = this.style.arrowWidth;
+        const arrowHeight = this.style.arrowHeight;
 
         graphics.beginPath();
+        graphics.save();
+
+        graphics.lineWidth(this.style.lineWidth);
         graphics.moveTo(leftX, y);
         graphics.lineTo(rightX, y);
 
+        const leftArrow = () => {
+            graphics.moveTo(leftX + arrowWidth * width, y - arrowHeight * width);
+            graphics.lineTo(leftX, y);
+            graphics.lineTo(leftX + arrowWidth * width, y + arrowHeight * width);
+        };
+
         switch (this.direction) {
         case 'ltr':
-            graphics.moveTo(rightX - 10, y - 5);
+            graphics.moveTo(rightX - arrowWidth * width, y - arrowHeight * width);
             graphics.lineTo(rightX, y);
-            graphics.lineTo(rightX - 10, y + 5);
+            graphics.lineTo(rightX - arrowWidth * width, y + arrowHeight * width);
             break;
         case 'rtl':
-            graphics.moveTo(leftX + 10, y - 5);
-            graphics.lineTo(leftX, y);
-            graphics.lineTo(leftX + 10, y + 5);
+            leftArrow();
             break;
         case 'none':
-            graphics.moveTo(leftX + 10, y - 5);
-            graphics.lineTo(leftX, y);
-            graphics.lineTo(leftX + 10, y + 5);
+            leftArrow();
             break;
         }
 
         graphics.stroke();
+        graphics.restore();
     }
 }

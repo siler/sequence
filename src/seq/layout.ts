@@ -69,7 +69,7 @@ export function layout(
             const position = new Point(lastRightExtent, topLeft.y);
             const extent = style.margin.pad(
                 style.padding.pad(
-                    measurer.ascentExtent(p.name)
+                    measurer.ascentExtent(p.name, style.font)
                 )
             );
             const box = new Box(position, extent);

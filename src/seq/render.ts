@@ -5,6 +5,9 @@ export const render = (graphics: Graphics, diagram: Diagram, scale?: number) => 
     graphics.clear();
     graphics.save();
 
+    graphics.lineCap('round');
+    graphics.lineJoin('round');
+
     if (scale) {
         graphics.scale(scale, scale);
     }
