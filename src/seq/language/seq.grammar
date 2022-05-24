@@ -1,0 +1,27 @@
+
+@top Program {
+    Participant*
+    Message*
+}
+
+Participant {
+    @specialize[@name="participant"]<ParticipantName, "participant"> ParticipantName
+}
+
+Message {
+    ParticipantName "->" ParticipantName
+}
+
+@skip { space | Comment }
+
+@tokens {
+    space { std.whitespace+ }
+    Comment { "#" ![\n]* }
+
+    "participant"
+    "->"
+
+    ParticipantName {
+        std.asciiLetter (std.asciiLetter | std.digit)*
+    }
+}

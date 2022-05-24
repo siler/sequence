@@ -40,9 +40,7 @@ export const newFont = (
     family: string, size: number,
     weight: FontWeight = 'normal',
     style: FontStyle = 'normal'
-): Font => {
-    return { family, size, weight, style };
-};
+): Font => ({ family, size, weight, style });
 
 export class Padding {
     constructor(

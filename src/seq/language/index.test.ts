@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
-import { parseDiagram } from './language';
+import { parseDiagram } from '.';
 
 // this test should be maintained but kept this simple
 test('parses a simple diagram', () => {
@@ -63,5 +63,36 @@ int3gra->zEr0 # oh my glob
         { from: name2, to: name3 },
         { from: name3, to: name2 },
         { from: name2, to: name1 },
+    ]);
+});
+
+test('parses a diagram with signal labels', () => {
+    // given
+    const input = `Alan -> Cynthia
+    label: gossips
+Cynthia -> Tina
+    label: calls
+Tina -> Cynthia
+    label: reciprocates
+Cynthia -> Alan
+    label: nopes
+`;
+
+    // when
+    const res = parseDiagram(input);
+
+    // then
+    expect(res).not.toBeNull();
+
+    expect(res!.participants).toMatchObject([
+        { name: 'Alan' },
+        { name: 'Cynthia' },
+        { name: 'Tina' },
+    ]);
+    expect(res!.messages).toMatchObject([
+        { from: 'Alan', to: 'Cynthia' },
+        { from: 'Cynthia', to: 'Tina' },
+        { from: 'Tina', to: 'Cynthia' },
+        { from: 'Cynthia', to: 'Alan' },
     ]);
 });

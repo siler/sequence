@@ -1,25 +1,21 @@
 import { Message, ParsedDiagram, Participant } from './language';
 import { Lifeline, Diagram, Signal, Direction } from './model';
 import { defaultStyle, LifelineStyle, MessageStyle, Padding, Style, } from './style';
-import { fromHtmlCanvas } from './measurer';
+import { fromHtmlCanvas as newMeasurer, Measurer } from './measurer';
 
 export interface Point {
     readonly x: number,
     readonly y: number
 }
 
-export const newPoint = (x: number, y: number) => {
-    return { x, y };
-};
+export const newPoint = (x: number, y: number) => ({ x, y });
 
 export interface Extent {
     readonly width: number,
     readonly height: number
 }
 
-export const newExtent = (width: number, height: number) => {
-    return { width, height };
-};
+export const newExtent = (width: number, height: number) => ({ width, height });
 
 export class Box {
     constructor(public position: Point, public extent: Extent) { }
@@ -66,135 +62,15 @@ export class Box {
 
 export const layout = (
     parsed: ParsedDiagram,
-    measuringCanvas: HTMLCanvasElement,
+    canvas: HTMLCanvasElement,
     style: Style = defaultStyle()
 ): Diagram => {
-    const measurer = fromHtmlCanvas(measuringCanvas);
+    const measurer = newMeasurer(canvas);
     const topLeft = newPoint(style.frame.padding.left, style.frame.padding.top);
 
-    /**
-     * generates a list of lifelines laid out left to right in order.
-     * 
-     * each lifeline box should have the same height, width will vary
-     * by text length. they should start with consistent spacing between
-     * them, though that will be modified later depending on message text
-     * length among other things.
-     */
-    const processLifelines = (style: LifelineStyle, participants: Participant[]): Lifeline[] => {
-        let lastRightExtent = topLeft.x;
-
-        return participants.map((p) => {
-            const position = newPoint(lastRightExtent, topLeft.y);
-            const width = measurer.ascentExtent(p.name, style.font).width;
-            const extent = style.margin.pad(
-                style.padding.pad(
-                    newExtent(width, style.font.size)
-                )
-            );
-            const box = new Box(position, extent);
-            const lifeline = new Lifeline(
-                p.name,
-                box,
-                style
-            );
-
-            lastRightExtent = lifeline.box.right();
-
-            return lifeline;
-        });
-    };
-
-    const processMessages = (lifelines: Lifeline[], messages: Message[], style: MessageStyle): Signal[] => {
-        if (lifelines.length === 0) {
-            return [];
-        }
-
-        const nameIs = (str: string) => { return (lifeline: Lifeline) => lifeline.name === str; };
-
-        const messageSpan = (message: Message): Span => {
-            const from = lifelines.findIndex(nameIs(message.from));
-            const to = lifelines.findIndex(nameIs(message.to));
-
-            if (from < to) {
-                const leftX = lifelines[from].centerX();
-                return {
-                    direction : 'ltr',
-                    leftX,
-                    width : lifelines[to].centerX() - leftX,
-                };
-            } else if (from > to) {
-                const leftX = lifelines[to].centerX();
-                return {
-                    direction : 'rtl',
-                    leftX,
-                    width : lifelines[from].centerX() - leftX,
-                };
-            } else {
-                return {
-                    direction : 'none',
-                    width : 0,
-                    leftX : lifelines[from].centerX(),
-                };
-            }
-        };
-
-        let newHeight = lifelines.reduce(
-            (max, curr) => max > curr.bottom() ? max : curr.bottom(),
-            0
-        );
-
-        const signals = [];
-        for (const message of messages) {
-            const {direction, leftX, width} = messageSpan(message);
-
-            let contentWidth = width;
-            if (contentWidth > 0) {
-                contentWidth -= style.margin.horizontal();
-                contentWidth -= style.padding.horizontal();
-
-                if (contentWidth < 0) {
-                    contentWidth = 0;
-                }
-            }
-
-            const lineHeight = newHeight;
-            const position = newPoint(leftX, lineHeight);
-            const extent = style.margin.pad(style.padding.pad(newExtent(contentWidth, 0)));
-            const box = new Box(position, extent);
-            signals.push(
-                new Signal(
-                    box,
-                    direction,
-                    style,
-                )
-            );
-
-            newHeight += box.extent.height;
-        }
-
-        lifelines.forEach((lifeline) => lifeline.height = newHeight);
-
-        return signals;
-    };
-
-    const computeSize = (lifelines: Lifeline[]): Extent => {
-        const rightmost = lifelines.slice(-1)[0];
-        if (rightmost) {
-            return newExtent(
-                style.frame.padding.horizontal() + rightmost.box.right(),
-                style.frame.padding.vertical() + rightmost.box.bottom() + rightmost.height
-            );
-        } else {
-            return newExtent(
-                style.frame.padding.horizontal(),
-                style.frame.padding.vertical()
-            );
-        }
-    };
-
-    const lifelines = processLifelines(style.lifeline, parsed.participants);
-    const signals = processMessages(lifelines, parsed.messages, style.message);
-    const size = computeSize(lifelines);
+    const lifelines = layoutLifelines(style.lifeline, parsed.participants, measurer, topLeft);
+    const signals = layoutMessages(lifelines, parsed.messages, style.message);
+    const size = computeSize(lifelines, style);
 
     return {
         lifelines,
@@ -203,8 +79,128 @@ export const layout = (
     };
 };
 
+/**
+ * generates a list of lifelines laid out left to right in order.
+ * 
+ * each lifeline box should have the same height, width will vary
+ * by text length. they should start with consistent spacing between
+ * them, though that will be modified later depending on message text
+ * length among other things.
+ */
+const layoutLifelines = (style: LifelineStyle, participants: Participant[], measurer: Measurer, topLeft: Point): Lifeline[] => {
+    let lastRightExtent = topLeft.x;
+
+    return participants.map((p) => {
+        const position = newPoint(lastRightExtent, topLeft.y);
+        const width = measurer.ascentExtent(p.name, style.font).width;
+        const extent = style.margin.pad(
+            style.padding.pad(
+                newExtent(width, style.font.size)
+            )
+        );
+        const box = new Box(position, extent);
+        const lifeline = new Lifeline(
+            p.name,
+            box,
+            style
+        );
+
+        lastRightExtent = lifeline.box.right();
+
+        return lifeline;
+    });
+};
+
+const layoutMessages = (lifelines: Lifeline[], messages: Message[], style: MessageStyle): Signal[] => {
+    if (lifelines.length === 0) {
+        return [];
+    }
+
+    let newHeight = lifelines.reduce(
+        (max, curr) => max > curr.bottom() ? max : curr.bottom(),
+        0
+    );
+
+    const signals = [];
+    for (const message of messages) {
+        const { direction, leftX, width } = messageSpan(lifelines, message);
+
+        let contentWidth = width;
+        if (contentWidth > 0) {
+            contentWidth -= style.margin.horizontal();
+            contentWidth -= style.padding.horizontal();
+
+            if (contentWidth < 0) {
+                contentWidth = 0;
+            }
+        }
+
+        const lineHeight = newHeight;
+        const position = newPoint(leftX, lineHeight);
+        const extent = style.margin.pad(style.padding.pad(newExtent(contentWidth, 0)));
+        const box = new Box(position, extent);
+        signals.push(
+            new Signal(
+                box,
+                direction,
+                style,
+            )
+        );
+
+        newHeight += box.extent.height;
+    }
+
+    lifelines.forEach((lifeline) => lifeline.height = newHeight);
+
+    return signals;
+};
+
 interface Span {
     direction : Direction,
     leftX: number,
     width : number,
 }
+
+const nameIs = (str: string) => { return (lifeline: Lifeline) => lifeline.name === str; };
+
+const messageSpan = (lifelines: Lifeline[], message: Message): Span => {
+    const from = lifelines.findIndex(nameIs(message.from));
+    const to = lifelines.findIndex(nameIs(message.to));
+
+    if (from < to) {
+        const leftX = lifelines[from].centerX();
+        return {
+            direction: 'ltr',
+            leftX,
+            width: lifelines[to].centerX() - leftX,
+        };
+    } else if (from > to) {
+        const leftX = lifelines[to].centerX();
+        return {
+            direction: 'rtl',
+            leftX,
+            width: lifelines[from].centerX() - leftX,
+        };
+    } else {
+        return {
+            direction: 'none',
+            width: 0,
+            leftX: lifelines[from].centerX(),
+        };
+    }
+};
+
+const computeSize = (lifelines: Lifeline[], style: Style): Extent => {
+    const rightmost = lifelines.slice(-1)[0];
+    if (rightmost) {
+        return newExtent(
+            style.frame.padding.horizontal() + rightmost.box.right(),
+            style.frame.padding.vertical() + rightmost.box.bottom() + rightmost.height
+        );
+    } else {
+        return newExtent(
+            style.frame.padding.horizontal(),
+            style.frame.padding.vertical()
+        );
+    }
+};

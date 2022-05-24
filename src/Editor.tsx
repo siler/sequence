@@ -1,8 +1,12 @@
-import { EditorState, Extension, Text } from '@codemirror/state';
+import { Compartment, EditorState, Extension, Text } from '@codemirror/state';
 import { EditorView, PluginValue, ViewPlugin, ViewUpdate } from '@codemirror/view';
 import { basicSetup } from '@codemirror/basic-setup';
 import React, { useEffect, useMemo, useRef, } from 'react';
 import { debounce } from './debounce';
+import { parser } from './seq/language/gen/parser';
+import { styleTags, tags as t } from '@lezer/highlight';
+import { LanguageSupport, LRLanguage } from '@codemirror/language';
+import { completeFromList } from '@codemirror/autocomplete';
 
 const theme = EditorView.theme({
     '&': {
@@ -43,14 +47,20 @@ const Editor = ({ extensions, onUpdate, text}: EditorProps) => {
     );
 
     const editorState = useMemo(() => {
+        const languageConf = new Compartment();
+
         return EditorState.create({
             doc: text,
-            extensions: [basicSetup, theme, notifier, ...extensions],
+            extensions: [
+                basicSetup, theme, notifier, languageConf.of(seq()), ...extensions
+            ],
         });
+
         // text is omitted here because we don't want to recreate
         // the editor state whenever the text changes. the editor
         // is the source of truth for these changes, we can leave
         // it be.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [basicSetup, theme, notifier, extensions]);
 
     // then set up the view
@@ -98,4 +108,29 @@ const updateNotifier = <V extends PluginValue>(onUpdates: OnEditorUpdate[]): Vie
             }
         }
     });
+};
+
+const parserWithMetadata = parser.configure({
+    props: [
+        styleTags({
+            'participant ->': t.keyword,
+            'Comment': t.comment,
+            'ParticipantName': t.literal,
+        }),
+    ]
+});
+
+const seqLanguage = LRLanguage.define({
+    parser: parserWithMetadata,
+});
+
+
+const seqCompletion = seqLanguage.data.of({
+    autocomplete: completeFromList([
+        { label: 'participant', type: 'keyword' },
+    ])
+});
+
+const seq = () => {
+    return new LanguageSupport(seqLanguage, [seqCompletion]);
 };
