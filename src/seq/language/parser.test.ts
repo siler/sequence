@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
-import { parseDiagram } from '.';
+import { parseDiagram } from './parser';
 
 // this test should be maintained but kept this simple
 test('parses a simple diagram', () => {

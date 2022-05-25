@@ -3,31 +3,7 @@ import { EditorView, PluginValue, ViewPlugin, ViewUpdate } from '@codemirror/vie
 import { basicSetup } from '@codemirror/basic-setup';
 import React, { useEffect, useMemo, useRef, } from 'react';
 import { debounce } from './debounce';
-import { parser } from './seq/language/gen/parser';
-import { styleTags, tags as t } from '@lezer/highlight';
-import { LanguageSupport, LRLanguage } from '@codemirror/language';
-import { completeFromList } from '@codemirror/autocomplete';
-
-const theme = EditorView.theme({
-    '&': {
-        color: 'white',
-        backgroundColor: '#034'
-    },
-    '.cm-content': {
-        caretColor: '#0e9'
-    },
-    '&.cm-focused .cm-cursor': {
-        borderLeftColor: '#0e9'
-    },
-    '&.cm-focused .cm-selectionBackground, ::selection': {
-        backgroundColor: '#074'
-    },
-    '.gutter': {
-        backgroundColor: '#045',
-        color: '#ddd',
-        border: 'none'
-    }
-}, { dark: true });
+import { seq } from './seq/language';
 
 export type OnEditorUpdate = { (content: string): void };
 
@@ -52,7 +28,7 @@ const Editor = ({ extensions, onUpdate, text}: EditorProps) => {
         return EditorState.create({
             doc: text,
             extensions: [
-                basicSetup, theme, notifier, languageConf.of(seq()), ...extensions
+                basicSetup, notifier, languageConf.of(seq()), ...extensions
             ],
         });
 
@@ -61,7 +37,7 @@ const Editor = ({ extensions, onUpdate, text}: EditorProps) => {
         // is the source of truth for these changes, we can leave
         // it be.
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [basicSetup, theme, notifier, extensions]);
+    }, [notifier, extensions]);
 
     // then set up the view
     const parent = useRef(null);
@@ -71,12 +47,15 @@ const Editor = ({ extensions, onUpdate, text}: EditorProps) => {
             return;
         }
 
+        console.log('initializing view state');
+
         const view = new EditorView({
             state: editorState,
             parent: parent.current,
         });
 
         return () => {
+            console.log('destroying view state');
             view.destroy();
         };
     }, [editorState, parent]);
@@ -108,29 +87,4 @@ const updateNotifier = <V extends PluginValue>(onUpdates: OnEditorUpdate[]): Vie
             }
         }
     });
-};
-
-const parserWithMetadata = parser.configure({
-    props: [
-        styleTags({
-            'participant ->': t.keyword,
-            'Comment': t.comment,
-            'ParticipantName': t.literal,
-        }),
-    ]
-});
-
-const seqLanguage = LRLanguage.define({
-    parser: parserWithMetadata,
-});
-
-
-const seqCompletion = seqLanguage.data.of({
-    autocomplete: completeFromList([
-        { label: 'participant', type: 'keyword' },
-    ])
-});
-
-const seq = () => {
-    return new LanguageSupport(seqLanguage, [seqCompletion]);
 };

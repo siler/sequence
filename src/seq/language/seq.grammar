@@ -1,27 +1,43 @@
-
 @top Program {
-    Participant*
-    Message*
+    participantLine*
+    messageFull*
 }
 
-Participant {
+participantLine {
     @specialize[@name="participant"]<ParticipantName, "participant"> ParticipantName
 }
 
-Message {
+messageFull {
+    messageLine messageData*
+}
+
+messageLine {
     ParticipantName "->" ParticipantName
 }
 
-@skip { space | Comment }
+messageData {
+    labelLine
+}
+
+@skip { space | Comment } 
+
+@skip { } {
+    labelLine {
+        @specialize[@name="label"]<ParticipantName, "label"> ":" LabelText lineEnd
+    }
+}
 
 @tokens {
-    space { std.whitespace+ }
+    lineEnd { $[\n] }
+    space { $[ \t\n]+ }
     Comment { "#" ![\n]* }
 
     "participant"
+    "label"
     "->"
 
     ParticipantName {
         std.asciiLetter (std.asciiLetter | std.digit)*
     }
+    LabelText { ![\n]+ }
 }

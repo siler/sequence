@@ -1,6 +1,6 @@
 import { Graphics } from './graphics';
 import { newBrowserCanvas } from './graphics/browserCanvas';
-import { parseDiagram } from './language';
+import { parseDiagram } from './language/parser';
 import { Extent, layout } from './layout';
 import { render } from './render';
 

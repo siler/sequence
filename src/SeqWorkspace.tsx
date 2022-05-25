@@ -1,11 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Editor from './Editor';
 import Split from 'react-split';
-import { EditorView } from '@codemirror/view';
 import { draw } from './seq';
 import './SeqWorkspace.css';
+import { Extension } from '@codemirror/state';
 
 const diagramKey = 'seq-diagram';
+const extensions: Extension[] = [];
 
 /**
  * component for the seq workspace
@@ -36,6 +37,7 @@ const SeqWorkspace = () => {
 
     }, [text, canvas]);
 
+
     return (
         <Split
             sizes={[30, 70]}
@@ -43,7 +45,7 @@ const SeqWorkspace = () => {
             minSize={200}
             expandToMin={true} >
             <Editor
-                extensions={[EditorView.darkTheme.of(true)]}
+                extensions={extensions}
                 onUpdate={setText}
                 text={text}
             />

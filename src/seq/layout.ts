@@ -1,4 +1,4 @@
-import { Message, ParsedDiagram, Participant } from './language';
+import { Message, ParsedDiagram, Participant } from './language/parser';
 import { Lifeline, Diagram, Signal, Direction } from './model';
 import { defaultStyle, LifelineStyle, MessageStyle, Padding, Style, } from './style';
 import { fromHtmlCanvas as newMeasurer, Measurer } from './measurer';

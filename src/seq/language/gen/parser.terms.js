@@ -2,6 +2,5 @@
 export const
   Comment = 1,
   Program = 2,
-  Participant = 3,
-  ParticipantName = 4,
-  Message = 6
+  ParticipantName = 3,
+  LabelText = 7
