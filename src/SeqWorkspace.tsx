@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Editor from './Editor';
 import Split from 'react-split';
 import { draw } from './seq';
@@ -10,50 +10,45 @@ const extensions: Extension[] = [];
 
 /**
  * component for the seq workspace
- * 
+ *
  * includes a primary workspace split between an editor and a renderer.
  */
 const SeqWorkspace = () => {
-    // load and initialize the workspace text, then set it up for persistence
-    const [text, setText] = useState('');
-    useMemo(() => {
-        const diagram = localStorage.getItem(diagramKey);
-        if (diagram) {
-            setText(diagram);
-        }
-    }, []);
+   // load and initialize the workspace text, then set it up for persistence
+   const [text, setText] = useState('');
+   useMemo(() => {
+      const diagram = localStorage.getItem(diagramKey);
+      if (diagram) {
+         setText(diagram);
+      }
+   }, []);
 
-    useEffect(() => {
-        localStorage.setItem(diagramKey, text);
-    }, [text]);
+   useEffect(() => {
+      localStorage.setItem(diagramKey, text);
+   }, [text]);
 
-    // configure the canvas ref and wire up drawing
-    const canvas = useRef<HTMLCanvasElement | null>(null);
+   // configure the canvas ref and wire up drawing
+   const canvas = useRef<HTMLCanvasElement | null>(null);
 
-    useEffect(() => {
-        if (canvas.current) {
-            draw(text, canvas.current, 1);
-        }
+   useEffect(() => {
+      if (canvas.current) {
+         draw(text, canvas.current, 1);
+      }
+   }, [text, canvas]);
 
-    }, [text, canvas]);
-
-
-    return (
-        <Split
-            sizes={[30, 70]}
-            className='seq-split'
-            minSize={200}
-            expandToMin={true} >
-            <Editor
-                extensions={extensions}
-                onUpdate={setText}
-                text={text}
-            />
-            <div>
-                <canvas ref={canvas} />
-            </div>
-        </Split>
-    );
+   return (
+      <Split
+         sizes={[30, 70]}
+         className="seq-split"
+         minSize={200}
+         expandToMin={true}
+      >
+         <Editor extensions={extensions} onUpdate={setText} text={text} />
+         <div>
+            <canvas ref={canvas} />
+         </div>
+      </Split>
+   );
 };
 
 export default SeqWorkspace;

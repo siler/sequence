@@ -4,29 +4,29 @@ import { styleTags, tags as t } from '@lezer/highlight';
 import { parser } from './gen/parser';
 
 export const seq = () => {
-    return new LanguageSupport(seqLanguage, [seqCompletion]);
+   return new LanguageSupport(seqLanguage, [seqCompletion]);
 };
 
 const parserWithMetadata = parser.configure({
-    props: [
-        styleTags({
-            Comment: t.comment,
-            ParticipantName: t.atom,
-            LabelText: t.string,
+   props: [
+      styleTags({
+         Comment: t.comment,
+         ParticipantName: t.atom,
+         LabelText: t.string,
 
-            'participant label': t.keyword,
-            '->': t.operator,
-        }),
-    ]
+         'participant label': t.keyword,
+         '->': t.operator,
+      }),
+   ],
 });
 
 const seqLanguage = LRLanguage.define({
-    parser: parserWithMetadata,
+   parser: parserWithMetadata,
 });
 
 const seqCompletion = seqLanguage.data.of({
-    autocomplete: completeFromList([
-        { label: 'participant', type: 'keyword' },
-        { label: 'label', type: 'keyword' },
-    ])
+   autocomplete: completeFromList([
+      { label: 'participant', type: 'keyword' },
+      { label: 'label', type: 'keyword' },
+   ]),
 });

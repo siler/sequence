@@ -1,20 +1,20 @@
 .seq-split {
-    display: flex;
-    flex-direction: row;
+   display: flex;
+   flex-direction: row;
 }
 
 .cm-scroller {
-    overflow: auto;
+   overflow: auto;
 }
 
 .cm-editor {
-    height: 100vh;
+   height: 100vh;
 }
 
 .gutter {
-    background-color: #eee;
+   background-color: #eee;
 }
 
 .gutter.gutter-horizontal {
-    cursor: col-resize;
+   cursor: col-resize;
 }
