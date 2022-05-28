@@ -100,9 +100,12 @@ export class Signal implements MessageProperties {
       const arrowWidth = this.style.arrowWidth;
       const arrowHeight = this.style.arrowHeight;
 
-      graphics.save();
+      graphics.save(); // signal
 
-      graphics.save();
+      graphics.lineWidth(this.style.lineWidth);
+
+      graphics.save(); // line
+
       if (this.dashed) {
          graphics.setLineDash([
             this.style.lineWidth * 2.5,
@@ -111,13 +114,11 @@ export class Signal implements MessageProperties {
       }
 
       graphics.beginPath();
-      graphics.lineWidth(this.style.lineWidth);
-
       graphics.moveTo(leftX, y);
       graphics.lineTo(rightX, y);
       graphics.stroke();
 
-      graphics.restore();
+      graphics.restore(); // line
 
       const leftArrow = () => {
          graphics.moveTo(leftX + arrowWidth * width, y - arrowHeight * width);
@@ -147,7 +148,11 @@ export class Signal implements MessageProperties {
             break;
       }
 
-      graphics.stroke();
+      if (this.filled) {
+         graphics.closePath().fill();
+      } else {
+         graphics.stroke();
+      }
 
       if (this.label) {
          const { family, size, weight, style } = this.style.font;
@@ -165,6 +170,6 @@ export class Signal implements MessageProperties {
          graphics.fillText(this.label, x, y);
       }
 
-      graphics.restore();
+      graphics.restore(); // signal
    };
 }

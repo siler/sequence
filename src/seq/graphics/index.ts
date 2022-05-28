@@ -70,6 +70,12 @@ export interface Graphics {
    clear(): void;
 
    /**
+    * attempts to append a line to the path connecting the current point
+    * to the first point
+    */
+   closePath(): Chainable;
+
+   /**
     * set path to an elipse with the provided center, width, and height
     */
    ellipse(
@@ -79,6 +85,11 @@ export interface Graphics {
       start?: number,
       stop?: number
    ): Chainable;
+
+   /**
+    * fills the current path
+    */
+   fill(): void;
 
    /**
     * set the fill style to use in when filling a path

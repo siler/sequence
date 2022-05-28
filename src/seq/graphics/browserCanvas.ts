@@ -115,6 +115,12 @@ export const newBrowserCanvas = (
          ctx.clearRect(0, 0, canvas.width, canvas.height);
       },
 
+      closePath: () => {
+         ctx.closePath();
+
+         return chainable;
+      },
+
       ellipse: (center, width, height, start, stop) => {
          const eStart = start || 0;
          const eStop = stop || twopi;
@@ -127,6 +133,10 @@ export const newBrowserCanvas = (
          ctx.restore();
 
          return chainable;
+      },
+
+      fill: () => {
+         ctx.fill();
       },
 
       fillStyle: (fill) => {

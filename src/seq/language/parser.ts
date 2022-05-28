@@ -127,12 +127,14 @@ const participant = map(
 
 const arrow = map(
    filterUndefined(
-      sequence([
-         discard(str('-')),
-         optional(str('-')),
-         discard(str('>')),
-         optional(str('>')),
-      ])
+      filterNull(
+         sequence([
+            discard(str('-')),
+            optional(str('-')),
+            discard(str('>')),
+            optional(str('>')),
+         ])
+      )
    ),
    ([dotted, empty]) =>
       dotted && empty ? dotted + empty : dotted ? dotted : empty ? empty : ''
