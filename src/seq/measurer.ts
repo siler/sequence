@@ -1,5 +1,5 @@
 import { newBrowserCanvas } from './graphics/browserCanvas';
-import { Extent, newExtent } from './layout';
+import { Extent } from './layout';
 import { Font } from './style';
 
 export interface Measurer {
@@ -20,7 +20,7 @@ export const fromHtmlCanvas = (canvas: HTMLCanvasElement): Measurer => {
    return {
       ascentExtent: (text: string, font: Font): Extent => {
          const m = metrics(text, font);
-         return newExtent(m.width, m.actualBoundingBoxAscent);
+         return { width: m.width, height: m.actualBoundingBoxAscent };
       },
    };
 };

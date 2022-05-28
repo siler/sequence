@@ -1,11 +1,12 @@
 import { Message, ParsedDiagram, Participant } from './language/parser';
 import { Lifeline, Diagram, Signal, Direction } from './model';
 import {
-   defaultStyle,
    LifelineStyle,
-   MessageStyle as SignalStyle,
+   SignalStyle as SignalStyle,
    Padding,
    Style,
+   horizontal,
+   vertical,
 } from './style';
 import { fromHtmlCanvas as newMeasurer, Measurer } from './measurer';
 
@@ -14,63 +15,59 @@ export interface Point {
    readonly y: number;
 }
 
-export const newPoint = (x: number, y: number): Point => ({ x, y });
+export const distance = (a: Point, b: Point): number => {
+   return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2));
+};
+
+export const inclinationAngle = (left: Point, right: Point): number => {
+   return -Math.atan(-(right.y - left.y) / (right.x - left.x));
+};
 
 export interface Extent {
    readonly width: number;
    readonly height: number;
 }
 
-export const newExtent = (width: number, height: number): Extent => ({
-   width,
-   height,
-});
+export const padExtent = (box: Extent, padding: Padding): Extent => {
+   const width = box.width + horizontal(padding);
+   const height = box.height + vertical(padding);
 
-export class Box {
-   constructor(public position: Point, public extent: Extent) {}
+   return { width, height };
+};
 
-   // right X position of the box
-   right = (): number => {
-      return this.position.x + this.extent.width;
-   };
+export interface Box extends Point, Extent {}
 
-   // bottom Y position of the lifeline box
-   bottom = (): number => {
-      return this.position.y + this.extent.height;
-   };
+export const right = (val: { x: number; width: number }): number => {
+   return val.x + val.width;
+};
 
-   // bottom right point of the lifeline box
-   bottomRight = (): Point => {
-      return newPoint(this.right(), this.bottom());
-   };
+export const bottom = (val: { y: number; height: number }): number => {
+   return val.y + val.height;
+};
 
-   centerX = (): number => {
-      return (this.position.x * 2 + this.extent.width) / 2;
-   };
+export const centerX = (val: { x: number; width: number }): number => {
+   return (val.x * 2 + val.width) / 2;
+};
 
-   // calculate a new box with the specified padding removed
-   depad = (padding: Padding) => {
-      const point = newPoint(
-         this.position.x + padding.left,
-         this.position.y + padding.top
-      );
+// calculate a new box with the specified padding removed
+export const depadBox = (box: Box, padding: Padding): Box => {
+   const x = box.x + padding.left;
+   const y = box.y + padding.top;
 
-      const extent = newExtent(
-         this.extent.width - padding.horizontal(),
-         this.extent.height - padding.vertical()
-      );
+   const width = box.width - horizontal(padding);
+   const height = box.height - vertical(padding);
 
-      return new Box(point, extent);
-   };
-}
+   return { x, y, width, height };
+};
 
 export const layout = (
    parsed: ParsedDiagram,
    canvas: HTMLCanvasElement,
-   style: Style = defaultStyle()
+   style: Style
 ): Diagram => {
    const measurer = newMeasurer(canvas);
-   const topLeft = newPoint(style.frame.padding.left, style.frame.padding.top);
+   const padding = style.frame.padding;
+   const topLeft = { x: padding.left, y: padding.top };
 
    const lifelines = layoutLifelines(
       parsed.participants,
@@ -79,16 +76,41 @@ export const layout = (
       topLeft
    );
 
-   const signals = layoutMessages(lifelines, parsed.messages, measurer, style);
+   const signals = layoutSignals(lifelines, parsed.messages, measurer, style);
 
-   const size = computeSize(lifelines, style);
+   const lifelineHeight =
+      signals
+         .map((signal) => signal.box.height + signal.delayHeight)
+         .reduce((val, curr) => val + curr) +
+      style.lifeline.margin.bottom +
+      style.signal.font.size;
+
+   const size = computeSize(lifelines, lifelineHeight, style);
 
    return {
       lifelines,
       signals,
+      lifelineHeight,
       size,
    };
 };
+
+interface Segment {
+   name: string;
+   width: number;
+}
+
+interface Span {
+   left: number;
+   right: number;
+   direction: Direction;
+   width: number;
+}
+
+interface Allotment {
+   space: number | undefined;
+   count: number;
+}
 
 /**
  * generates a list of lifelines laid out left to right in order.
@@ -104,28 +126,32 @@ const layoutLifelines = (
    measurer: Measurer,
    topLeft: Point
 ): Lifeline[] => {
-   let lastRightExtent = topLeft.x;
+   console.log(topLeft);
+   let nextLeft = topLeft.x;
 
    const extents = participants.map((participant) =>
       measurer.ascentExtent(participant.name, style.font)
    );
 
-   return participants.map((p, idx) => {
-      const position = newPoint(lastRightExtent, topLeft.y);
+   return participants.map((participant, idx) => {
+      const x = nextLeft;
+      const y = topLeft.y;
       const width = extents[idx].width;
-      const extent = style.margin.pad(
-         style.padding.pad(newExtent(width, style.font.size))
+      const height = style.font.size;
+      const extent = padExtent(
+         padExtent({ width, height }, style.padding),
+         style.margin
       );
-      const box = new Box(position, extent);
-      const lifeline = new Lifeline(p.name, box, style);
+      const box = { x, y, ...extent };
+      const lifeline = { name: participant.name, box };
 
-      lastRightExtent = lifeline.box.right();
+      nextLeft = right(lifeline.box);
 
       return lifeline;
    });
 };
 
-const layoutMessages = (
+const layoutSignals = (
    lifelines: Lifeline[],
    messages: Message[],
    measurer: Measurer,
@@ -136,53 +162,38 @@ const layoutMessages = (
    }
 
    const segments = generateSegments(lifelines);
-   const spans = [];
-   for (const message of messages) {
-      const span = updateSegmentsForMessage({
+
+   const spans = messages.map((message) =>
+      updateSegmentsForMessage({
          segments,
          message,
          style: style.signal,
          measurer,
-      });
-
-      spans.push(span);
-   }
+      })
+   );
 
    widenLifelines(lifelines, segments);
-   const signals = createSignals(lifelines, messages, spans, style);
 
-   const height = signals
-      .map((signal) => signal.box.extent.height + signal.delayHeight)
-      .reduce((val, curr) => val + curr, 20);
-   lifelines.forEach((lifeline) => (lifeline.height = height));
-
-   return signals;
+   return createSignals(lifelines, messages, spans, style);
 };
 
-interface Segment {
-   name: string;
-   width: number;
-}
-
 const generateSegments = (lifelines: Lifeline[]): Segment[] => {
-   const segments = [];
-
-   for (let idx = 0; idx < lifelines.length; idx++) {
+   const segments = lifelines.map((lifeline, idx) => {
       let width = 0;
 
-      if (idx !== lifelines.length - 1) {
-         const left = lifelines[idx].centerX();
-         const right = lifelines[idx + 1].centerX();
+      if (idx < lifelines.length - 1) {
+         const left = centerX(lifeline.box);
+         const right = centerX(lifelines[idx + 1].box);
          width = right - left;
       }
 
-      segments.push({ width, name: lifelines[idx].name });
-   }
+      return { width, name: lifeline.name };
+   });
 
    return segments;
 };
 
-interface layoutMessageProps {
+interface updateSegmentForMessageProps {
    segments: Segment[];
    message: Message;
    style: SignalStyle;
@@ -194,37 +205,24 @@ const updateSegmentsForMessage = ({
    message,
    style,
    measurer,
-}: layoutMessageProps): Span => {
+}: updateSegmentForMessageProps): Span => {
    const span = messageSpan(segments, message);
 
    if (message.label) {
-      const fontHeight = style.font.size;
-      const labelExtent = measurer.ascentExtent(message.label, style.font);
-      const signalExtent = style.margin.pad(
-         style.padding.pad(newExtent(labelExtent.width, fontHeight))
-      );
+      const textWidth = measurer.ascentExtent(message.label, style.font).width;
+      const signalWidth =
+         textWidth + horizontal(style.padding) + horizontal(style.margin);
 
-      if (signalExtent.width > span.width) {
-         widen(segments, span, signalExtent.width);
+      if (signalWidth > span.width) {
+         widen(segments, span, signalWidth);
       }
    }
 
    return span;
 };
 
-interface Span {
-   left: number;
-   right: number;
-   direction: Direction;
-   width: number;
-}
-
-interface named {
-   name: string;
-}
-
 const nameIs = (str: string) => {
-   return (lifeline: named) => lifeline.name === str;
+   return (lifeline: { name: string }) => lifeline.name === str;
 };
 
 const messageSpan = (segments: Segment[], message: Message): Span => {
@@ -260,20 +258,25 @@ const messageSpan = (segments: Segment[], message: Message): Span => {
    }
 };
 
-const computeSize = (lifelines: Lifeline[], style: Style): Extent => {
+const computeSize = (
+   lifelines: Lifeline[],
+   lifelineHeight: number,
+   style: Style
+): Extent => {
    const rightmost = lifelines.slice(-1)[0];
    if (rightmost) {
-      return newExtent(
-         style.frame.padding.horizontal() + rightmost.box.right(),
-         style.frame.padding.vertical() +
-            rightmost.box.bottom() +
-            rightmost.height
-      );
+      return {
+         width: horizontal(style.frame.padding) + right(rightmost.box),
+         height:
+            vertical(style.frame.padding) +
+            bottom(rightmost.box) +
+            lifelineHeight,
+      };
    } else {
-      return newExtent(
-         style.frame.padding.horizontal(),
-         style.frame.padding.vertical()
-      );
+      return {
+         width: horizontal(style.frame.padding),
+         height: vertical(style.frame.padding),
+      };
    }
 };
 
@@ -299,7 +302,7 @@ const widen = (segments: Segment[], span: Span, width: number) => {
    }
 };
 
-const nextAllotment = (segments: Segment[]) => {
+const nextAllotment = (segments: Segment[]): Allotment => {
    const first = segments[0].width;
    for (let count = 1; count < segments.length; count++) {
       if (segments[count].width > first) {
@@ -311,7 +314,7 @@ const nextAllotment = (segments: Segment[]) => {
    }
 
    return {
-      space: null,
+      space: undefined,
       count: segments.length,
    };
 };
@@ -332,11 +335,11 @@ const widenLifelines = (lifelines: Lifeline[], segments: Segment[]) => {
       return;
    }
 
-   let lastCenter = lifelines[0].centerX();
+   let lastCenter = centerX(lifelines[0].box);
    let added = 0;
    for (let idx = 0; idx < segments.length - 1; idx += 1) {
       const lifeline = lifelines[idx + 1];
-      const center = lifeline.centerX();
+      const center = centerX(lifeline.box);
       const width = center - lastCenter;
       const difference = segments[idx].width - width;
 
@@ -347,10 +350,11 @@ const widenLifelines = (lifelines: Lifeline[], segments: Segment[]) => {
          continue;
       }
 
-      const pos = lifeline.box.position;
-      lifeline.box.position = {
-         x: pos.x + added,
-         y: pos.y,
+      const x = lifeline.box.x + added;
+      const y = lifeline.box.y;
+      lifelines[idx + 1] = {
+         ...lifeline,
+         box: { ...lifeline.box, x, y },
       };
    }
 };
@@ -362,40 +366,38 @@ const createSignals = (
    style: Style
 ): Signal[] => {
    const myStyle = style.signal;
-   let y = lifelines.reduce(
-      (max, curr) => (max > curr.bottom() ? max : curr.bottom()),
-      0
-   );
 
-   const signals = [];
+   let y = lifelines
+      .map((lifeline) => bottom(lifeline.box))
+      .reduce((val, curr) => Math.max(val, curr));
+
+   const signals: Signal[] = [];
    for (let idx = 0; idx < messages.length; idx += 1) {
       const message = messages[idx];
       const span = spans[idx];
 
-      // adjust by (lifeline width / 2) + 1
-      const offset = style.lifeline.lineWidth / 2;
-      const left = lifelines[span.left].centerX() + (offset + 1);
-      const right = lifelines[span.right].centerX() - (offset + 1);
+      // adjust by (lifeline width / 2) + 1 so boxes line up adjacent
+      const offset = style.lifeline.lineWidth / 2 + 1;
+      const left = centerX(lifelines[span.left].box) + offset;
+      const right = centerX(lifelines[span.right].box) - offset;
       const width = right - left;
 
       const height =
-         myStyle.font.size * (message.label ? 1.5 : 0.5) +
-         myStyle.padding.vertical() +
-         myStyle.margin.vertical();
+         (message.label ? myStyle.font.size : 0.0) +
+         vertical(myStyle.padding) +
+         vertical(myStyle.margin);
 
       const delayHeight = message.delay ? message.delay * 10 : 0;
 
-      const box = new Box(newPoint(left, y + 1), newExtent(width, height));
+      const box = { x: left, y: y, width, height };
 
-      const signal = new Signal(
+      signals.push({
          box,
-         spans[idx].direction,
-         myStyle,
-         message,
-         delayHeight
-      );
-      signals.push(signal);
-      y += height + delayHeight + 1;
+         delayHeight,
+         direction: spans[idx].direction,
+         props: message,
+      });
+      y += height + delayHeight;
    }
 
    return signals;

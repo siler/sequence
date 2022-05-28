@@ -3,6 +3,7 @@ import { newBrowserCanvas } from './graphics/browserCanvas';
 import { parseDiagram } from './language/parser';
 import { Extent, layout } from './layout';
 import { render } from './render';
+import { defaultStyle } from './style';
 
 export const draw = (
    code: string,
@@ -23,9 +24,10 @@ const parseAndRender = (
       return;
    }
 
-   const diagram = layout(parsedDiagram, canvas);
+   const style = defaultStyle();
+   const diagram = layout(parsedDiagram, canvas, style);
    fitCanvasSize(canvas, diagram.size, scale);
-   render(graphics, diagram, scale);
+   render(graphics, diagram, style, scale);
 };
 
 const fitCanvasSize = (

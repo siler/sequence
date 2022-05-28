@@ -1,9 +1,7 @@
-import { Extent, newExtent } from './layout';
-
 export interface Style {
    readonly frame: FrameStyle;
    readonly lifeline: LifelineStyle;
-   readonly signal: MessageStyle;
+   readonly signal: SignalStyle;
 }
 
 export interface FrameStyle {
@@ -18,7 +16,7 @@ export interface LifelineStyle {
    readonly lineWidth: number;
 }
 
-export interface MessageStyle {
+export interface SignalStyle {
    readonly padding: Padding;
    readonly margin: Padding;
    readonly font: Font;
@@ -44,53 +42,44 @@ export const newFont = (
    weight: FontWeight = 'normal'
 ): Font => ({ family, size, style, weight });
 
-export class Padding {
-   constructor(
-      public top: number,
-      public right: number,
-      public bottom: number,
-      public left: number
-   ) {}
-
-   horizontal = (): number => {
-      return this.left + this.right;
-   };
-
-   vertical = (): number => {
-      return this.top + this.bottom;
-   };
-
-   pad = (extent: Extent): Extent => {
-      return newExtent(
-         extent.width + this.horizontal(),
-         extent.height + this.vertical()
-      );
-   };
+export interface Padding {
+   readonly top: number;
+   readonly right: number;
+   readonly bottom: number;
+   readonly left: number;
 }
 
-export const newPadTbLr = (tb: number, lr: number): Padding => {
-   return new Padding(tb, lr, tb, lr);
+export const horizontal = (padding: Padding): number => {
+   return padding.left + padding.right;
 };
 
-export const newPadAll = (padding: number): Padding => {
-   return new Padding(padding, padding, padding, padding);
+export const vertical = (padding: Padding): number => {
+   return padding.top + padding.bottom;
+};
+
+export const padTbLr = (tb: number, lr: number): Padding => {
+   return { top: tb, right: lr, bottom: tb, left: lr };
+};
+
+export const padAll = (padding: number): Padding => {
+   return { top: padding, right: padding, bottom: padding, left: padding };
 };
 
 export const defaultStyle = (): Style => {
    return {
       frame: {
-         padding: newPadAll(10),
+         padding: padAll(10),
       },
       lifeline: {
-         padding: newPadAll(10),
-         margin: newPadAll(10),
+         padding: padAll(10),
+         margin: padAll(10),
          font: newFont('Helvetica', 16),
          boxLineWidth: 1,
          lineWidth: 1,
       },
       signal: {
-         padding: new Padding(10, 30, 6, 30),
-         margin: newPadAll(0),
+         padding: { top: 10, right: 30, bottom: 6, left: 30 },
+         margin: padAll(0),
          font: newFont('Helvetica', 12),
          lineWidth: 1,
          arrowWidth: 15.0,
