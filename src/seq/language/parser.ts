@@ -30,10 +30,14 @@ export interface Participant {
    readonly name: string;
 }
 
+export type ArrowEnd = 'filled' | 'empty';
+export type LineStyle = 'solid' | 'dashed' | 'dotted';
+
 export interface MessageProperties {
    readonly label?: string;
-   readonly filled: boolean;
-   readonly dashed: boolean;
+   readonly arrow: ArrowEnd;
+   readonly line: LineStyle;
+   readonly delay: number;
 }
 
 // A message with a sender and a receiver
@@ -131,13 +135,24 @@ const arrow = map(
          sequence([
             discard(str('-')),
             optional(str('-')),
+            optional(str('-')),
             discard(str('>')),
             optional(str('>')),
          ])
       )
    ),
-   ([dotted, empty]) =>
-      dotted && empty ? dotted + empty : dotted ? dotted : empty ? empty : ''
+   (strs) => strs.reduce((val, curr) => val + curr, '')
+);
+
+const delay = map(
+   filterNull(
+      sequence([
+         discard(str('(')),
+         regex(/[0-9]+/g, 'number'),
+         discard(str(')')),
+      ])
+   ),
+   ([delay]) => delay
 );
 
 /**
@@ -149,11 +164,20 @@ const fromTo = map(
          simpleParticipant,
          skipZero,
          must(arrow),
+         optional(delay),
          skipZero,
          must(simpleParticipant),
       ])
    ),
-   ([from, arrow, to]) => ({ from, arrow, to })
+   ([from, arrow, delay, to]) => ({
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      from: from!,
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      to: to!,
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      arrow: arrow!,
+      delay,
+   })
 );
 
 /**
@@ -169,15 +193,8 @@ const label = map(
  */
 const message = map(
    pair(terminated(fromTo, skip), optional(label)),
-   ({ first: { from, arrow, to }, second: label }) => {
-      return {
-         from,
-         to,
-         label,
-         filled: arrow.indexOf('>') === -1,
-         dashed: arrow.indexOf('-') !== -1,
-      };
-   }
+   ({ first: { from, to, arrow, delay }, second: label }) =>
+      processMessage(from, to, arrow, delay, label)
 );
 
 /**
@@ -226,4 +243,49 @@ const extractParticipants = (
    }
 
    return participants;
+};
+
+const processMessage = (
+   from: string,
+   to: string,
+   arrowStr: string,
+   delayStr?: string,
+   label?: string
+): Message => {
+   let delay = 0;
+
+   if (delayStr) {
+      delay = parseFloat(delayStr);
+      if (isNaN(delay)) {
+         delay = 0;
+      }
+   }
+
+   let arrow: ArrowEnd = 'filled';
+   let dashes = 0;
+   for (const ch of arrowStr) {
+      if (ch === '>') {
+         arrow = 'empty';
+      } else if (ch === '-') {
+         dashes += 1;
+      }
+   }
+
+   let line: LineStyle;
+   if (dashes === 1) {
+      line = 'dashed';
+   } else if (dashes === 2) {
+      line = 'dotted';
+   } else {
+      line = 'solid';
+   }
+
+   return {
+      from,
+      to,
+      label,
+      arrow,
+      line,
+      delay: delay,
+   };
 };

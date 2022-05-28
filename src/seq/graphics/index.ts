@@ -166,6 +166,11 @@ export interface Graphics {
    restore(): void;
 
    /**
+    * apply a rotation clockwise in radians to the canvas around (0, 0)
+    */
+   rotate(angle: number): void;
+
+   /**
     * set path to a rounded rectangle at (x, y) with the provided width, height, and radius
     */
    roundRect(

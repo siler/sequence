@@ -18,3 +18,8 @@
 .gutter.gutter-horizontal {
    cursor: col-resize;
 }
+
+.diagram-holder {
+   overflow-y: auto;
+   overflow-x: auto;
+}

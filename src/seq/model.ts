@@ -1,6 +1,6 @@
 import { Graphics } from './graphics';
 import { MessageProperties } from './language/parser';
-import { Box, Extent } from './layout';
+import { Box, Extent, newPoint, Point } from './layout';
 import { LifelineStyle, MessageStyle as SignalStyle } from './style';
 
 export interface Diagram {
@@ -58,19 +58,14 @@ export class Lifeline {
          this.style.font.weight,
          this.style.font.style
       );
-      const metrics = graphics.measureText(this.name);
-      graphics.fillText(
-         this.name,
-         text.position.x,
-         text.position.y + metrics.actualBoundingBoxAscent
-      );
+      graphics.fillText(this.name, text.position.x, text.bottom());
       graphics.restore();
 
       const centerX = this.centerX();
       graphics.save();
       graphics.lineWidth(this.style.lineWidth);
       graphics.beginPath();
-      graphics.moveTo(centerX, rect.bottom());
+      graphics.moveTo(centerX, rect.bottom() + 1);
       graphics.lineTo(centerX, this.bottom()).stroke();
       graphics.restore();
    };
@@ -78,67 +73,114 @@ export class Lifeline {
 
 export type Direction = 'ltr' | 'rtl' | 'none';
 
-export class Signal implements MessageProperties {
+export class Signal {
    constructor(
       public box: Box,
       public direction: Direction,
       public style: SignalStyle,
-      public filled: boolean,
-      public dashed: boolean,
-      public label?: string
+      public props: MessageProperties,
+      public delayHeight: number
    ) {}
 
    /**
     * draw the Signal
     */
    draw = (graphics: Graphics) => {
+      graphics.save();
+
+      const length = this.applyTransform(graphics);
+      // this.drawBoundingBox(graphics);
+      this.drawLine(graphics, length);
+      this.drawLabel(graphics, length);
+
+      graphics.restore();
+   };
+
+   drawBoundingBox = (graphics: Graphics) => {
+      graphics.save();
+
+      graphics.lineWidth(1);
+      graphics.strokeStyle('#f00');
+
+      graphics
+         .rect(
+            this.box.position.x,
+            this.box.position.y,
+            this.box.extent.width,
+            this.box.extent.height
+         )
+         .stroke();
+
+      graphics.restore();
+   };
+
+   applyTransform = (graphics: Graphics): number => {
       const padded = this.box.depad(this.style.margin);
-      const leftX = padded.position.x;
-      const rightX = padded.right();
-      const y = padded.bottom();
-      const width = this.style.lineWidth;
+
+      let left: Point;
+      let right: Point;
+      if (this.direction === 'rtl') {
+         const bottom = padded.bottom();
+         left = newPoint(padded.position.x, bottom + this.delayHeight);
+         right = newPoint(padded.right(), bottom);
+      } else {
+         left = newPoint(padded.position.x, padded.bottom());
+         right = newPoint(padded.right(), left.y + this.delayHeight);
+      }
+
+      const rads = -Math.atan(-(right.y - left.y) / (right.x - left.x));
+
+      graphics.translate(left.x, left.y);
+      graphics.rotate(rads);
+
+      const length = Math.sqrt(
+         Math.pow(right.x - left.x, 2) + Math.pow(right.y - left.y, 2)
+      );
+
+      return length;
+   };
+
+   drawLine = (graphics: Graphics, length: number) => {
       const arrowWidth = this.style.arrowWidth;
       const arrowHeight = this.style.arrowHeight;
 
-      graphics.save(); // signal
-
+      graphics.strokeStyle('#000');
       graphics.lineWidth(this.style.lineWidth);
 
-      graphics.save(); // line
+      graphics.save();
 
-      if (this.dashed) {
+      if (this.props.line === 'dashed') {
          graphics.setLineDash([
-            this.style.lineWidth * 2.5,
-            this.style.lineWidth * 2.5,
+            this.style.lineWidth * 5,
+            this.style.lineWidth * 5,
+         ]);
+      } else if (this.props.line === 'dotted') {
+         graphics.setLineDash([
+            this.style.lineWidth * 2,
+            this.style.lineWidth * 2,
          ]);
       }
 
       graphics.beginPath();
-      graphics.moveTo(leftX, y);
-      graphics.lineTo(rightX, y);
+      graphics.moveTo(0, 0);
+      graphics.lineTo(length, 0);
       graphics.stroke();
 
-      graphics.restore(); // line
+      graphics.restore();
 
       const leftArrow = () => {
-         graphics.moveTo(leftX + arrowWidth * width, y - arrowHeight * width);
-         graphics.lineTo(leftX, y);
-         graphics.lineTo(leftX + arrowWidth * width, y + arrowHeight * width);
+         graphics.moveTo(arrowWidth, -arrowHeight);
+         graphics.lineTo(0, 0);
+         graphics.lineTo(arrowWidth, arrowHeight);
       };
 
       graphics.beginPath();
 
       switch (this.direction) {
          case 'ltr':
-            graphics.moveTo(
-               rightX - arrowWidth * width,
-               y - arrowHeight * width
-            );
-            graphics.lineTo(rightX, y);
-            graphics.lineTo(
-               rightX - arrowWidth * width,
-               y + arrowHeight * width
-            );
+            graphics.moveTo(length - arrowWidth, -arrowHeight);
+            graphics.lineTo(length, 0);
+            graphics.lineTo(length - arrowWidth, arrowHeight);
             break;
          case 'rtl':
             leftArrow();
@@ -148,28 +190,26 @@ export class Signal implements MessageProperties {
             break;
       }
 
-      if (this.filled) {
+      if (this.props.arrow === 'filled') {
          graphics.closePath().fill();
       } else {
          graphics.stroke();
       }
+   };
 
-      if (this.label) {
+   drawLabel = (graphics: Graphics, length: number) => {
+      const label = this.props.label;
+      if (label) {
          const { family, size, weight, style } = this.style.font;
          graphics.setFont(family, size, weight, style);
          graphics.textAlign('center');
 
-         const content = this.box
-            .depad(this.style.padding)
-            .depad(this.style.margin);
+         const midpoint = length / 2;
+         const height = this.style.padding.bottom;
 
-         const x = content.centerX();
-         const y = content.bottom() - this.style.font.size * 0.5;
          graphics.strokeStyle('#fff');
-         graphics.strokeText(this.label, x, y);
-         graphics.fillText(this.label, x, y);
+         graphics.strokeText(label, midpoint, -height);
+         graphics.fillText(label, midpoint, -height);
       }
-
-      graphics.restore(); // signal
    };
 }

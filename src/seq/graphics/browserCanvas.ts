@@ -225,6 +225,10 @@ export const newBrowserCanvas = (
          return chainable;
       },
 
+      rotate: (angle: number) => {
+         ctx.rotate(angle);
+      },
+
       save: () => {
          ctx.save();
       },

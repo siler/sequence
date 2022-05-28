@@ -44,7 +44,7 @@ const SeqWorkspace = () => {
          expandToMin={true}
       >
          <Editor extensions={extensions} onUpdate={setText} text={text} />
-         <div>
+         <div className="diagram-holder">
             <canvas ref={canvas} />
          </div>
       </Split>

@@ -73,18 +73,13 @@ export const layout = (
    const topLeft = newPoint(style.frame.padding.left, style.frame.padding.top);
 
    const lifelines = layoutLifelines(
-      style.lifeline,
       parsed.participants,
+      style.lifeline,
       measurer,
       topLeft
    );
 
-   const signals = layoutMessages(
-      lifelines,
-      parsed.messages,
-      measurer,
-      style.message
-   );
+   const signals = layoutMessages(lifelines, parsed.messages, measurer, style);
 
    const size = computeSize(lifelines, style);
 
@@ -104,16 +99,20 @@ export const layout = (
  * length among other things.
  */
 const layoutLifelines = (
-   style: LifelineStyle,
    participants: Participant[],
+   style: LifelineStyle,
    measurer: Measurer,
    topLeft: Point
 ): Lifeline[] => {
    let lastRightExtent = topLeft.x;
 
-   return participants.map((p) => {
+   const extents = participants.map((participant) =>
+      measurer.ascentExtent(participant.name, style.font)
+   );
+
+   return participants.map((p, idx) => {
       const position = newPoint(lastRightExtent, topLeft.y);
-      const width = measurer.ascentExtent(p.name, style.font).width;
+      const width = extents[idx].width;
       const extent = style.margin.pad(
          style.padding.pad(newExtent(width, style.font.size))
       );
@@ -130,7 +129,7 @@ const layoutMessages = (
    lifelines: Lifeline[],
    messages: Message[],
    measurer: Measurer,
-   style: SignalStyle
+   style: Style
 ): Signal[] => {
    if (lifelines.length === 0 || messages.length === 0) {
       return [];
@@ -142,7 +141,7 @@ const layoutMessages = (
       const span = updateSegmentsForMessage({
          segments,
          message,
-         style,
+         style: style.signal,
          measurer,
       });
 
@@ -153,7 +152,7 @@ const layoutMessages = (
    const signals = createSignals(lifelines, messages, spans, style);
 
    const height = signals
-      .map((signal) => signal.box.extent.height)
+      .map((signal) => signal.box.extent.height + signal.delayHeight)
       .reduce((val, curr) => val + curr, 20);
    lifelines.forEach((lifeline) => (lifeline.height = height));
 
@@ -360,8 +359,9 @@ const createSignals = (
    lifelines: Lifeline[],
    messages: Message[],
    spans: Span[],
-   style: SignalStyle
+   style: Style
 ): Signal[] => {
+   const myStyle = style.signal;
    let y = lifelines.reduce(
       (max, curr) => (max > curr.bottom() ? max : curr.bottom()),
       0
@@ -372,28 +372,30 @@ const createSignals = (
       const message = messages[idx];
       const span = spans[idx];
 
-      // mod by one so the box is adjacent to the lifespan lines, not overlapping
-      const left = lifelines[span.left].centerX() + 1;
-      const right = lifelines[span.right].centerX() - 1;
+      // adjust by (lifeline width / 2) + 1
+      const offset = style.lifeline.lineWidth / 2;
+      const left = lifelines[span.left].centerX() + (offset + 1);
+      const right = lifelines[span.right].centerX() - (offset + 1);
       const width = right - left;
 
       const height =
-         style.font.size * 1.5 +
-         style.padding.vertical() +
-         style.margin.vertical();
+         myStyle.font.size * (message.label ? 1.5 : 0.5) +
+         myStyle.padding.vertical() +
+         myStyle.margin.vertical();
 
-      const box = new Box(newPoint(left, y), newExtent(width, height));
+      const delayHeight = message.delay ? message.delay * 10 : 0;
+
+      const box = new Box(newPoint(left, y + 1), newExtent(width, height));
 
       const signal = new Signal(
          box,
          spans[idx].direction,
-         style,
-         message.filled,
-         message.dashed,
-         message.label
+         myStyle,
+         message,
+         delayHeight
       );
       signals.push(signal);
-      y += height;
+      y += height + delayHeight + 1;
    }
 
    return signals;

@@ -14,7 +14,7 @@ messageFull {
 }
 
 messageLine {
-    ParticipantName Arrow ParticipantName
+    ParticipantName Arrow Delay? ParticipantName
 }
 
 @skip { } {
@@ -22,12 +22,14 @@ messageLine {
         @specialize[@name="label"]<ParticipantName, "label"> ":" LabelText lineEnd
     }
     Arrow { "->" | "->>" | "-->" | "-->>" }
+    Delay { "(" digits ")" }
 }
 
 @tokens {
     lineEnd { $[\n] }
     space { $[ \t\n]+ }
     Comment { "#" ![\n]* }
+    digits { std.digit+ }
 
     "participant"
     "label"

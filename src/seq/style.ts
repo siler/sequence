@@ -3,7 +3,7 @@ import { Extent, newExtent } from './layout';
 export interface Style {
    readonly frame: FrameStyle;
    readonly lifeline: LifelineStyle;
-   readonly message: MessageStyle;
+   readonly signal: MessageStyle;
 }
 
 export interface FrameStyle {
@@ -84,17 +84,17 @@ export const defaultStyle = (): Style => {
       lifeline: {
          padding: newPadAll(10),
          margin: newPadAll(10),
-         font: newFont('Helvetica', 14),
-         boxLineWidth: 2,
-         lineWidth: 2,
+         font: newFont('Helvetica', 16),
+         boxLineWidth: 1,
+         lineWidth: 1,
       },
-      message: {
-         padding: newPadAll(10),
+      signal: {
+         padding: new Padding(10, 30, 6, 30),
          margin: newPadAll(0),
-         font: newFont('Helvetica', 14),
-         lineWidth: 2,
-         arrowWidth: 7.5,
-         arrowHeight: 3,
+         font: newFont('Helvetica', 12),
+         lineWidth: 1,
+         arrowWidth: 15.0,
+         arrowHeight: 6.0,
       },
    };
 };

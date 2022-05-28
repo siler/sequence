@@ -4,4 +4,5 @@ export const
   Program = 2,
   ParticipantName = 3,
   Arrow = 5,
-  LabelText = 7
+  Delay = 6,
+  LabelText = 8
