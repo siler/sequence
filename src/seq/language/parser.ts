@@ -1,6 +1,5 @@
 import {
    any,
-   Context,
    discard,
    eof,
    Error,
@@ -52,7 +51,7 @@ export const parseDiagram = (code: string): ParsedDiagram | null => {
       code += '\n';
    }
 
-   const result = diagram(new Context(code));
+   const result = diagram({ input: code, index: 0 });
    if (result.type === 'success') {
       return result.value;
    }
@@ -78,7 +77,10 @@ export const parseDiagram = (code: string): ParsedDiagram | null => {
       }
    }
 
-   const sample = result.ctx.rest().slice(0, 40);
+   const sample = result.ctx.input.slice(
+      result.ctx.index,
+      result.ctx.index + 40
+   );
 
    console.log(`parse error: "${error}"`);
    console.log(`remaining: "${sample}"`);

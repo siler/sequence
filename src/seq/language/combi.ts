@@ -1,84 +1,126 @@
-type Parser<T> = (ctx: Context) => Result<T>;
+export type Parser<T> = (ctx: Context) => Result<T>;
 
-export class Context {
-   constructor(
-      public readonly input: string,
-      public readonly index: number = 0
-   ) {}
-
-   rest(): string {
-      return this.input.slice(this.index);
-   }
-
-   with(index: number): Context {
-      return new Context(this.input, index);
-   }
+export interface Context {
+   readonly input: string;
+   readonly index: number;
 }
+
+export const withIndex = (context: Context, index: number): Context => {
+   return {
+      input: context.input,
+      index,
+   };
+};
 
 export type Result<T> = Success<T> | Error | Failure;
 
 /**
  * indicates a successful parse, and contains the resulting value
  */
-export class Success<T> {
-   readonly type = 'success';
+export type Success<T> = {
+   type: 'success';
+   ctx: Context;
+   value: T;
+};
 
-   constructor(public readonly ctx: Context, public readonly value: T) {}
+export const newSuccess = <T>(ctx: Context, value: T): Success<T> => {
+   return {
+      type: 'success',
+      ctx,
+      value,
+   };
+};
 
-   /**
-    * helper to associate a successful context with a refined value
-    */
-   with<TN>(value: TN): Success<TN> {
-      return new Success(this.ctx, value);
-   }
-}
+/**
+ * helper to associate a successful context with a refined value
+ */
+export const withValue = <T, TN>(
+   success: Success<T>,
+   value: TN
+): Success<TN> => {
+   return {
+      type: 'success',
+      ctx: success.ctx,
+      value,
+   };
+};
 
 /**
  * indicates a failed parse attempt
  */
-export class Error {
-   readonly type = 'error';
+export type Error = {
+   readonly type: 'error';
+   readonly ctx: Context;
+   readonly description: string;
+   readonly cause?: Error;
+};
 
-   constructor(
-      public readonly ctx: Context,
-      public readonly description: string,
-      public readonly cause: Error | null = null
-   ) {}
+export const newError = (
+   ctx: Context,
+   description: string,
+   cause?: Error
+): Error => {
+   return {
+      type: 'error',
+      ctx,
+      description,
+      cause,
+   };
+};
 
-   /**
-    * helper to wrap an error with additional descriptive information
-    */
-   context(description: string): Error {
-      return new Error(this.ctx, description, this);
-   }
-
-   /**
-    * helper to turn an error into a failure
-    */
-   fail(): Failure {
-      return new Failure(this.ctx, 'fail', this.cause);
-   }
-}
+/**
+ * helper to turn an error into a failure
+ */
+export const fail = (error: Error): Failure => {
+   return newFailure(error.ctx, 'fail', error.cause);
+};
 
 /**
  * indicates a failed parse attempt
  */
-export class Failure {
-   readonly type = 'failure';
+export type Failure = {
+   readonly type: 'failure';
+   readonly ctx: Context;
+   readonly description: string;
+   readonly cause?: Error | Failure;
+};
 
-   constructor(
-      public readonly ctx: Context,
-      public readonly description: string,
-      public readonly cause: Error | Failure | null = null
-   ) {}
+export const newFailure = (
+   ctx: Context,
+   description: string,
+   cause?: Error | Failure
+): Failure => {
+   return {
+      type: 'failure',
+      ctx,
+      description,
+      cause,
+   };
+};
 
-   /**
-    * helper to wrap a failure with additional descriptive information
-    */
-   context(description: string): Failure {
-      return new Failure(this.ctx, description, this);
+/**
+ * helper to wrap an error with additional descriptive information
+ */
+export const withContext = (
+   res: Error | Failure,
+   description: string
+): Error | Failure => {
+   if (res.type === 'error') {
+      return {
+         type: 'error',
+         ctx: res.ctx,
+         description,
+         cause: res,
+      };
+   } else {
+      return {
+         type: 'failure',
+         ctx: res.ctx,
+         description,
+         cause: res,
+      };
    }
-}
+};
 
 /**
  * causes any errors produced by the passed parser to be turned into failures
@@ -88,7 +130,7 @@ export const must = <T>(parser: Parser<T>): Parser<T> => {
       const res = parser(ctx);
 
       if (res.type === 'error') {
-         return res.fail();
+         return fail(res);
       }
 
       return res;
@@ -102,14 +144,14 @@ export const str = (match: string): Parser<string> => {
    return (ctx) => {
       const index = ctx.index + match.length;
       if (index >= ctx.input.length) {
-         return new Error(ctx, `matching "${match}"`);
+         return newError(ctx, `matching "${match}"`);
       }
 
       if (ctx.input.substring(ctx.index, index) === match) {
-         return new Success(ctx.with(index), match);
+         return newSuccess(withIndex(ctx, index), match);
       }
 
-      return new Error(ctx, `matching "${match}"`);
+      return newError(ctx, `matching "${match}"`);
    };
 };
 
@@ -124,10 +166,10 @@ export const regex = (re: RegExp, expected: string): Parser<string> => {
 
       const res = re.exec(ctx.input);
       if (res && res.index === ctx.index) {
-         return new Success(ctx.with(ctx.index + res[0].length), res[0]);
+         return newSuccess(withIndex(ctx, ctx.index + res[0].length), res[0]);
       }
 
-      return new Error(ctx, `matching ${expected}`);
+      return newError(ctx, `matching ${expected}`);
    };
 };
 
@@ -137,10 +179,10 @@ export const regex = (re: RegExp, expected: string): Parser<string> => {
 export const eof = (): Parser<null> => {
    return (ctx) => {
       if (ctx.index >= ctx.input.length) {
-         return new Success(ctx, null);
+         return newSuccess(ctx, null);
       }
 
-      return new Error(ctx, 'matching eof');
+      return newError(ctx, 'matching eof');
    };
 };
 
@@ -151,9 +193,9 @@ export const discard = <T>(parser: Parser<T>): Parser<null> => {
    return (ctx) => {
       const res = parser(ctx);
       if (res.type === 'success') {
-         return res.with(null);
+         return withValue(res, null);
       } else {
-         return res.context('discard');
+         return withContext(res, 'discard');
       }
    };
 };
@@ -166,7 +208,7 @@ export const any = <T>(parsers: Parser<T>[]): Parser<T> => {
       let furthestRes: Error | null = null;
 
       if (parsers.length === 0) {
-         return new Error(ctx, 'any');
+         return newError(ctx, 'any');
       }
 
       for (const parser of parsers) {
@@ -175,7 +217,7 @@ export const any = <T>(parsers: Parser<T>[]): Parser<T> => {
             case 'success':
                return res;
             case 'failure':
-               return res.context('any');
+               return withContext(res, 'any');
          }
 
          if (!furthestRes || furthestRes.ctx.index < res.ctx.index) {
@@ -184,7 +226,7 @@ export const any = <T>(parsers: Parser<T>[]): Parser<T> => {
       }
 
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      return furthestRes!.context('any');
+      return withContext(furthestRes!, 'any');
    };
 };
 
@@ -199,10 +241,10 @@ export const optional = <T>(parser: Parser<T>): Parser<T | undefined> => {
          case 'success':
             return res;
          case 'failure':
-            return res.context('optional');
+            return withContext(res, 'optional');
       }
 
-      return new Success(ctx, undefined);
+      return newSuccess(ctx, undefined);
    };
 };
 
@@ -222,14 +264,14 @@ export const manyZero = <T>(parser: Parser<T>): Parser<T[]> => {
          if (res.type === 'error') {
             break;
          } else if (res.type === 'failure') {
-            return res.context('many');
+            return withContext(res, 'many');
          }
 
          nextCtx = res.ctx;
          values.push(res.value);
       }
 
-      return new Success(nextCtx, values);
+      return newSuccess(nextCtx, values);
    };
 };
 
@@ -247,7 +289,7 @@ export const many = <T>(parser: Parser<T>): Parser<T[]> => {
          if (res.type === 'error') {
             break;
          } else if (res.type === 'failure') {
-            return res.context('many');
+            return withContext(res, 'many');
          }
 
          nextCtx = res.ctx;
@@ -255,10 +297,10 @@ export const many = <T>(parser: Parser<T>): Parser<T[]> => {
       }
 
       if (values.length === 0) {
-         return new Error(nextCtx, 'manyOne');
+         return newError(nextCtx, 'manyOne');
       }
 
-      return new Success(nextCtx, values);
+      return newSuccess(nextCtx, values);
    };
 };
 
@@ -277,15 +319,15 @@ export const pair = <A, B>(
    return (ctx) => {
       const resA = parserA(ctx);
       if (resA.type !== 'success') {
-         return resA.context('pair first');
+         return withContext(resA, 'pair first');
       }
 
       const resB = parserB(resA.ctx);
       if (resB.type !== 'success') {
-         return resB.context('pair second');
+         return withContext(resB, 'pair second');
       }
 
-      return resB.with({ first: resA.value, second: resB.value });
+      return withValue(resB, { first: resA.value, second: resB.value });
    };
 };
 
@@ -299,15 +341,15 @@ export const terminated = <A, B>(
    return (ctx) => {
       const resA = parserA(ctx);
       if (resA.type !== 'success') {
-         return resA.context('terminated first');
+         return withContext(resA, 'terminated first');
       }
 
       const resB = parserB(resA.ctx);
       if (resB.type !== 'success') {
-         return resB.context('terminated second');
+         return withContext(resB, 'terminated second');
       }
 
-      return resB.with(resA.value);
+      return withValue(resB, resA.value);
    };
 };
 
@@ -322,14 +364,14 @@ export const sequence = <T>(parsers: Parser<T>[]): Parser<T[]> => {
       for (const parser of parsers) {
          const res = parser(nextCtx);
          if (res.type !== 'success') {
-            return res.context('sequence');
+            return withContext(res, 'sequence');
          }
 
          values.push(res.value);
          nextCtx = res.ctx;
       }
 
-      return new Success(nextCtx, values);
+      return newSuccess(nextCtx, values);
    };
 };
 
@@ -345,7 +387,7 @@ export const filter = <T>(
 
       const res = parser(ctx);
       if (res.type !== 'success') {
-         return res.context('filter');
+         return withContext(res, 'filter');
       }
 
       for (const value of res.value) {
@@ -354,7 +396,7 @@ export const filter = <T>(
          }
       }
 
-      return res.with(values);
+      return withValue(res, values);
    };
 };
 
@@ -367,7 +409,7 @@ export const filterNull = <T>(parser: Parser<(T | null)[]>): Parser<T[]> => {
       const res = parser(ctx);
 
       if (res.type !== 'success') {
-         return res.context('filterNull');
+         return withContext(res, 'filterNull');
       }
 
       for (const value of res.value) {
@@ -376,7 +418,7 @@ export const filterNull = <T>(parser: Parser<(T | null)[]>): Parser<T[]> => {
          }
       }
 
-      return res.with(values);
+      return withValue(res, values);
    };
 };
 
@@ -391,7 +433,7 @@ export const filterUndefined = <T>(
       const res = parser(ctx);
 
       if (res.type !== 'success') {
-         return res.context('filterNull');
+         return withContext(res, 'filterNull');
       }
 
       for (const value of res.value) {
@@ -400,7 +442,7 @@ export const filterUndefined = <T>(
          }
       }
 
-      return res.with(values);
+      return withValue(res, values);
    };
 };
 
@@ -411,9 +453,9 @@ export const map = <A, B>(parser: Parser<A>, fn: (val: A) => B): Parser<B> => {
    return (ctx) => {
       const res = parser(ctx);
       if (res.type === 'success') {
-         return res.with(fn(res.value));
+         return withValue(res, fn(res.value));
       }
 
-      return res.context('map');
+      return withContext(res, 'map');
    };
 };
