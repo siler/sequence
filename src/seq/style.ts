@@ -90,7 +90,7 @@ export const defaultStyle = (): Style => {
       },
       message: {
          padding: newPadAll(10),
-         margin: newPadAll(5),
+         margin: newPadAll(0),
          font: newFont('Helvetica', 14),
          lineWidth: 2,
          arrowWidth: 7.5,

@@ -217,6 +217,13 @@ export interface Graphics {
    strokeStyle(stroke: string): void;
 
    /**
+    * strokes text at (x, y). does not affect path.
+    *
+    * affected by setFont and textAlign
+    */
+   strokeText(text: string, x: number, y: number): void;
+
+   /**
     * set the text alignment
     *
     * text alignment is relative to the x value (i.e. it changes the origin respectively)

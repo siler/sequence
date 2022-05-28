@@ -16,6 +16,7 @@ import {
    sequence,
    str,
    terminated,
+   filterUndefined,
 } from './combi';
 
 // A parsed sequence diagram with ordered lists of participants and messages
@@ -29,11 +30,16 @@ export interface Participant {
    readonly name: string;
 }
 
+export interface MessageProperties {
+   readonly label?: string;
+   readonly filled: boolean;
+   readonly dashed: boolean;
+}
+
 // A message with a sender and a receiver
-export interface Message {
+export interface Message extends MessageProperties {
    readonly from: string;
    readonly to: string;
-   readonly label?: string;
 }
 
 // parse a SequenceDiagram from a string
@@ -116,9 +122,20 @@ const participant = map(
    filterNull(
       sequence([discard(str('participant')), skip, must(simpleParticipant)])
    ),
-   ([participantName]) => {
-      return newParticipant(participantName);
-   }
+   ([name]) => ({ name })
+);
+
+const arrow = map(
+   filterUndefined(
+      sequence([
+         discard(str('-')),
+         optional(str('-')),
+         discard(str('>')),
+         optional(str('>')),
+      ])
+   ),
+   ([dotted, empty]) =>
+      dotted && empty ? dotted + empty : dotted ? dotted : empty ? empty : ''
 );
 
 /**
@@ -129,12 +146,12 @@ const fromTo = map(
       sequence([
          simpleParticipant,
          skipZero,
-         must(discard(str('->'))),
+         must(arrow),
          skipZero,
          must(simpleParticipant),
       ])
    ),
-   ([from, to]) => ({ from, to })
+   ([from, arrow, to]) => ({ from, arrow, to })
 );
 
 /**
@@ -150,7 +167,15 @@ const label = map(
  */
 const message = map(
    pair(terminated(fromTo, skip), optional(label)),
-   ({ first: { from, to }, second: label }) => newMessage(from, to, label)
+   ({ first: { from, arrow, to }, second: label }) => {
+      return {
+         from,
+         to,
+         label,
+         filled: arrow.indexOf('>') === -1,
+         dashed: arrow.indexOf('-') !== -1,
+      };
+   }
 );
 
 /**
@@ -174,14 +199,6 @@ const newParsedDiagram = (
    participants: Participant[],
    messages: Message[]
 ): ParsedDiagram => ({ participants, messages });
-
-const newParticipant = (name: string): Participant => ({ name });
-
-const newMessage = (from: string, to: string, label?: string): Message => ({
-   from,
-   to,
-   label,
-});
 
 const makeDiagram = (
    participants: Participant[],

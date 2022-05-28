@@ -1,4 +1,5 @@
 import { Graphics } from './graphics';
+import { MessageProperties } from './language/parser';
 import { Box, Extent } from './layout';
 import { LifelineStyle, MessageStyle as SignalStyle } from './style';
 
@@ -77,11 +78,13 @@ export class Lifeline {
 
 export type Direction = 'ltr' | 'rtl' | 'none';
 
-export class Signal {
+export class Signal implements MessageProperties {
    constructor(
       public box: Box,
       public direction: Direction,
       public style: SignalStyle,
+      public filled: boolean,
+      public dashed: boolean,
       public label?: string
    ) {}
 
@@ -99,17 +102,30 @@ export class Signal {
 
       graphics.save();
 
+      graphics.save();
+      if (this.dashed) {
+         graphics.setLineDash([
+            this.style.lineWidth * 2.5,
+            this.style.lineWidth * 2.5,
+         ]);
+      }
+
       graphics.beginPath();
       graphics.lineWidth(this.style.lineWidth);
 
       graphics.moveTo(leftX, y);
       graphics.lineTo(rightX, y);
+      graphics.stroke();
+
+      graphics.restore();
 
       const leftArrow = () => {
          graphics.moveTo(leftX + arrowWidth * width, y - arrowHeight * width);
          graphics.lineTo(leftX, y);
          graphics.lineTo(leftX + arrowWidth * width, y + arrowHeight * width);
       };
+
+      graphics.beginPath();
 
       switch (this.direction) {
          case 'ltr':
@@ -137,14 +153,16 @@ export class Signal {
          const { family, size, weight, style } = this.style.font;
          graphics.setFont(family, size, weight, style);
          graphics.textAlign('center');
+
          const content = this.box
             .depad(this.style.padding)
             .depad(this.style.margin);
-         graphics.fillText(
-            this.label,
-            content.centerX(),
-            content.bottom() - this.style.font.size * 0.5
-         );
+
+         const x = content.centerX();
+         const y = content.bottom() - this.style.font.size * 0.5;
+         graphics.strokeStyle('#fff');
+         graphics.strokeText(this.label, x, y);
+         graphics.fillText(this.label, x, y);
       }
 
       graphics.restore();

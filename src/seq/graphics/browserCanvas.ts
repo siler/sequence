@@ -242,6 +242,10 @@ export const newBrowserCanvas = (
          ctx.strokeStyle = stroke;
       },
 
+      strokeText: (text, x, y) => {
+         ctx.strokeText(text, x, y);
+      },
+
       textAlign: (align) => {
          ctx.textAlign = align as CanvasTextAlign;
       },

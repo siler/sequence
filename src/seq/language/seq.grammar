@@ -1,3 +1,5 @@
+@skip { space | Comment } 
+
 @top Program {
     participantLine*
     messageFull*
@@ -8,23 +10,18 @@ participantLine {
 }
 
 messageFull {
-    messageLine messageData*
+    messageLine labelLine*
 }
 
 messageLine {
-    ParticipantName "->" ParticipantName
+    ParticipantName Arrow ParticipantName
 }
-
-messageData {
-    labelLine
-}
-
-@skip { space | Comment } 
 
 @skip { } {
     labelLine {
         @specialize[@name="label"]<ParticipantName, "label"> ":" LabelText lineEnd
     }
+    Arrow { "->" | "->>" | "-->" | "-->>" }
 }
 
 @tokens {
@@ -34,7 +31,6 @@ messageData {
 
     "participant"
     "label"
-    "->"
 
     ParticipantName {
         std.asciiLetter (std.asciiLetter | std.digit)*

@@ -381,6 +381,30 @@ export const filterNull = <T>(parser: Parser<(T | null)[]>): Parser<T[]> => {
 };
 
 /**
+ * removes all undefineds from the results of a list of parsers
+ */
+export const filterUndefined = <T>(
+   parser: Parser<(T | undefined)[]>
+): Parser<T[]> => {
+   return (ctx) => {
+      const values: T[] = [];
+      const res = parser(ctx);
+
+      if (res.type !== 'success') {
+         return res.context('filterNull');
+      }
+
+      for (const value of res.value) {
+         if (value !== undefined) {
+            values.push(value);
+         }
+      }
+
+      return res.with(values);
+   };
+};
+
+/**
  * maps the result of a successful parser over fn
  */
 export const map = <A, B>(parser: Parser<A>, fn: (val: A) => B): Parser<B> => {
