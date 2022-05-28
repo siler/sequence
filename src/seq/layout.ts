@@ -9,8 +9,6 @@ import {
 } from './style';
 import { fromHtmlCanvas as newMeasurer, Measurer } from './measurer';
 
-const LINE_SPACING = 1.5;
-
 export interface Point {
    readonly x: number;
    readonly y: number;
@@ -46,6 +44,10 @@ export class Box {
       return newPoint(this.right(), this.bottom());
    };
 
+   centerX = (): number => {
+      return (this.position.x * 2 + this.extent.width) / 2;
+   };
+
    // calculate a new box with the specified padding removed
    depad = (padding: Padding) => {
       const point = newPoint(
@@ -76,13 +78,17 @@ export const layout = (
       measurer,
       topLeft
    );
+
    const signals = layoutMessages(
       lifelines,
       parsed.messages,
       measurer,
       style.message
    );
+
    const size = computeSize(lifelines, style);
+
+   console.log(JSON.stringify(signals.map((s) => s.label)));
 
    return {
       lifelines,
@@ -160,6 +166,69 @@ const layoutMessages = (
    return signals;
 };
 
+const lifelinesToSegments = (lifelines: Lifeline[]): Segment[] => {
+   const segments = [];
+
+   for (let idx = 0; idx < lifelines.length - 1; idx++) {
+      const left = lifelines[idx].centerX();
+      const right = lifelines[idx + 1].centerX();
+      const width = right - left;
+      segments.push({ width, idx });
+   }
+
+   return segments;
+};
+
+interface layoutMessageProps {
+   lifelines: Lifeline[];
+   segments: Segment[];
+   message: Message;
+   height: number;
+   style: MessageStyle;
+   measurer: Measurer;
+}
+
+const layoutMessage = ({
+   lifelines,
+   segments,
+   message,
+   height,
+   style,
+   measurer,
+}: layoutMessageProps) => {
+   const span = messageSpan(lifelines, message);
+
+   let extent = newExtent(
+      span.width,
+      style.margin.vertical() + style.padding.vertical()
+   );
+
+   if (message.label) {
+      const fontHeight = style.font.size;
+      const labelExtent = measurer.ascentExtent(message.label, style.font);
+      const signalExtent = style.margin.pad(
+         style.padding.pad(newExtent(labelExtent.width, fontHeight))
+      );
+
+      if (signalExtent.width > span.width) {
+         widen(segments, span, signalExtent.width);
+         extent = signalExtent;
+      } else {
+         extent = newExtent(extent.width, extent.height + fontHeight);
+      }
+   }
+
+   let left = lifelines[0].centerX();
+   for (let i = 0; i < span.left; i++) {
+      left += segments[i].width;
+   }
+
+   const box = new Box(newPoint(left, height), extent);
+   const signal = new Signal(box, span.direction, style, message.label);
+
+   return { signal, height: extent.height };
+};
+
 interface Span {
    left: number;
    right: number;
@@ -227,80 +296,18 @@ const computeSize = (lifelines: Lifeline[], style: Style): Extent => {
    }
 };
 
-const lifelinesToSegments = (lifelines: Lifeline[]): Segment[] => {
-   const segments = [];
-
-   for (let idx = 0; idx < lifelines.length - 1; idx++) {
-      const left = lifelines[idx].centerX();
-      const right = lifelines[idx + 1].centerX();
-      const width = right - left;
-      segments.push({ width, idx });
-   }
-
-   console.log('initial segments:', JSON.stringify(segments));
-
-   return segments;
-};
-
-interface layoutMessageProps {
-   lifelines: Lifeline[];
-   segments: Segment[];
-   message: Message;
-   height: number;
-   style: MessageStyle;
-   measurer: Measurer;
-}
-
-const layoutMessage = ({
-   lifelines,
-   segments,
-   message,
-   height,
-   style,
-   measurer,
-}: layoutMessageProps) => {
-   const span = messageSpan(lifelines, message);
-
-   let extent = newExtent(
-      span.width,
-      style.margin.vertical() + style.padding.vertical()
-   );
-
-   if (message.label) {
-      const labelWidth = style.margin.pad(
-         style.padding.pad(measurer.ascentExtent(message.label, style.font))
-      ).width;
-
-      if (labelWidth > span.width) {
-         widen(segments, span, labelWidth);
-         extent = style.margin.pad(
-            style.padding.pad(
-               newExtent(labelWidth, style.font.size * LINE_SPACING)
-            )
-         );
-      }
-   }
-
-   const box = new Box(newPoint(span.leftX, height), extent);
-   const signal = new Signal(box, span.direction, style);
-
-   return { signal, height: extent.height };
-};
 
 const widen = (segments: Segment[], span: Span, width: number) => {
    let remaining = width - span.width;
    if (remaining <= 0) {
       return;
    }
-   console.log('widening span', JSON.stringify(span));
 
-   const slice = segments.slice(span.left, span.right + 1);
+   const slice = segments.slice(span.left, span.right);
    slice.sort((a, b) => a.width - b.width);
-   console.log('sorted slice:', JSON.stringify(slice));
 
    while (remaining > 0) {
       const allotment = nextAllotment(slice);
-      console.log('levelling allotted:', JSON.stringify(allotment));
 
       const take =
          allotment.space && remaining > allotment.space
@@ -310,8 +317,6 @@ const widen = (segments: Segment[], span: Span, width: number) => {
 
       allocate(slice, allotment, take);
    }
-
-   console.log('allocated widths:', JSON.stringify(segments));
 };
 
 const nextAllotment = (segments: Segment[]) => {
@@ -361,14 +366,11 @@ const adjustLifelines = (lifelines: Lifeline[], segments: Segment[]) => {
       if (!added) {
          continue;
       }
-      console.log('diff in', lifeline);
 
       const pos = lifeline.box.position;
-      console.log('int pos', JSON.stringify(pos));
       lifeline.box.position = {
          x: pos.x + added,
          y: pos.y,
       };
-      console.log('new pos', JSON.stringify(lifeline.box.position));
    }
 };

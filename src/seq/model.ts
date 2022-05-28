@@ -81,7 +81,8 @@ export class Signal {
    constructor(
       public box: Box,
       public direction: Direction,
-      public style: SignalStyle
+      public style: SignalStyle,
+      public label?: string
    ) {}
 
    /**
@@ -96,10 +97,11 @@ export class Signal {
       const arrowWidth = this.style.arrowWidth;
       const arrowHeight = this.style.arrowHeight;
 
-      graphics.beginPath();
       graphics.save();
 
+      graphics.beginPath();
       graphics.lineWidth(this.style.lineWidth);
+
       graphics.moveTo(leftX, y);
       graphics.lineTo(rightX, y);
 
@@ -130,6 +132,21 @@ export class Signal {
       }
 
       graphics.stroke();
+
+      if (this.label) {
+         const { family, size, weight, style } = this.style.font;
+         graphics.setFont(family, size, weight, style);
+         graphics.textAlign('center');
+         const content = this.box
+            .depad(this.style.padding)
+            .depad(this.style.margin);
+         graphics.fillText(
+            this.label,
+            content.centerX(),
+            content.bottom() - this.style.font.size * 0.5
+         );
+      }
+
       graphics.restore();
    };
 }

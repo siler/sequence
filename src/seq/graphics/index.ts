@@ -223,7 +223,7 @@ export interface Graphics {
     *
     * affects drawing state
     */
-   textAlign(align: string): void;
+   textAlign(align: 'left' | 'right' | 'center' | 'start' | 'end'): void;
 
    /**
     * apply a translating transformation to the drawable area

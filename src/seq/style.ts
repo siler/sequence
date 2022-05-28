@@ -33,16 +33,16 @@ export type FontStyle = 'normal' | 'italic';
 export interface Font {
    readonly family: string;
    readonly size: number;
-   readonly weight: FontWeight;
    readonly style: FontStyle;
+   readonly weight: FontWeight;
 }
 
 export const newFont = (
    family: string,
    size: number,
-   weight: FontWeight = 'normal',
-   style: FontStyle = 'normal'
-): Font => ({ family, size, weight, style });
+   style: FontStyle = 'normal',
+   weight: FontWeight = 'normal'
+): Font => ({ family, size, style, weight });
 
 export class Padding {
    constructor(
