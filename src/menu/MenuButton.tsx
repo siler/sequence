@@ -1,4 +1,4 @@
-import { ChevronRight, ChevronLeft } from '../icons/chevron';
+import { ChevronRightIcon, ChevronLeftIcon } from '@heroicons/react/solid';
 import { setMenuOpen } from '../store';
 import { dispatchFn } from '../store';
 
@@ -23,7 +23,7 @@ export const MenuButton = ({ dispatch, open }: MenuButtonProps) => {
             dispatch(setMenuOpen(!open));
          }}
       >
-         {open ? <ChevronRight /> : <ChevronLeft />}
+         {open ? <ChevronRightIcon /> : <ChevronLeftIcon />}
       </div>
    );
 };

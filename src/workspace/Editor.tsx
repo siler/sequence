@@ -7,12 +7,12 @@ import {
    ViewUpdate,
 } from '@codemirror/view';
 import { basicSetup } from '@codemirror/basic-setup';
+import { indentWithTab } from '@codemirror/commands';
 import { useEffect, useMemo, useRef } from 'react';
 import { debounce } from '../debounce';
-import { seq } from '../seq/language';
+import { sequence } from '../seq';
 import { dispatchFn } from '../store';
 import { setCode } from '../store';
-import { indentWithTab } from '@codemirror/commands';
 import './Editor.css';
 
 export type OnEditorUpdate = { (content: string): void };
@@ -41,7 +41,7 @@ export const Editor = ({ dispatch, text }: EditorProps) => {
          extensions: [
             basicSetup,
             notifier,
-            languageConf.of(seq()),
+            languageConf.of(sequence()),
             keymap.of([indentWithTab]),
          ],
       });

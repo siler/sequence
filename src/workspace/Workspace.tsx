@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
-import { Editor } from './Editor';
 import Split from 'react-split';
-import './Workspace.css';
+import { Editor } from './Editor';
 import { draw } from '../seq';
 import { dispatchFn } from '../store';
+import './Workspace.css';
 
 export interface WorkspaceProps {
    dispatch: dispatchFn;

@@ -3,7 +3,7 @@ import { LanguageSupport, LRLanguage } from '@codemirror/language';
 import { styleTags, tags as t } from '@lezer/highlight';
 import { parser } from './gen/parser';
 
-export const seq = () => {
+export const sequence = () => {
    return new LanguageSupport(seqLanguage, [seqCompletion]);
 };
 

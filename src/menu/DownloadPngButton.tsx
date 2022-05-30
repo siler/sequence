@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 
 export interface DownloadPngProps {
-   open: boolean;
    canvas: HTMLCanvasElement | null;
+   open: boolean;
 }
 
 export const DownloadPng: React.FC<DownloadPngProps> = ({ canvas, open }) => {
@@ -21,7 +21,9 @@ export const DownloadPng: React.FC<DownloadPngProps> = ({ canvas, open }) => {
    }, [canvas, url, open]);
    return (
       <a download="diagram.png" href={url}>
-         <div className="btn btn-indigo mt-4">Download .png</div>
+         <div className="btn btn-indigo mt-4 flex justify-center items-center">
+            Download .png
+         </div>
       </a>
    );
 };

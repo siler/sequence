@@ -21,7 +21,7 @@ code {
 }
 
 .btn {
-   @apply font-bold text-white py-2 px-4 rounded border-white border-2 rounded-lg cursor-pointer select-none flex content-center justify-center;
+   @apply font-bold text-white py-2 px-4 rounded border-white border-2 rounded-lg cursor-pointer select-none;
 }
 .btn-indigo {
    @apply bg-indigo-500 ;
