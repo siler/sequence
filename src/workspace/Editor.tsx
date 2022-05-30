@@ -10,9 +10,8 @@ import { basicSetup } from '@codemirror/basic-setup';
 import { indentWithTab } from '@codemirror/commands';
 import { useEffect, useMemo, useRef } from 'react';
 import { debounce } from '../debounce';
-import { sequence } from '../seq';
-import { dispatchFn } from '../store';
-import { setCode } from '../store';
+import { sequence } from '../sequence';
+import { dispatchFn, setCode } from '../state';
 import './Editor.css';
 
 export type OnEditorUpdate = { (content: string): void };

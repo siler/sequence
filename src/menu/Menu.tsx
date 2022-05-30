@@ -1,5 +1,5 @@
 import React, { FocusEvent, useEffect, useRef } from 'react';
-import { dispatchFn, setMenuOpen } from '../store';
+import { dispatchFn, setMenuOpen } from '../state';
 import { CopyEditLink } from './CopyEditLinkButton';
 import { DownloadPng } from './DownloadPngButton';
 

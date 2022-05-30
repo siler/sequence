@@ -1,9 +1,7 @@
 import { useEffect, useReducer, useRef } from 'react';
-import { Menu } from './menu';
-import { MenuButton } from './menu';
+import { Menu, MenuButton } from './menu';
 import { Workspace } from './workspace';
-import { reducer } from './store';
-import { initializer, initialState } from './store';
+import { reducer, initializer, initialState } from './state';
 
 export const diagramKey = 'seq-diagram';
 

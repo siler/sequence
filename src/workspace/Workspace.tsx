@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import Split from 'react-split';
 import { Editor } from './Editor';
-import { draw } from '../seq';
-import { dispatchFn } from '../store';
+import { draw } from '../sequence';
+import { dispatchFn } from '../state';
 import './Workspace.css';
 
 export interface WorkspaceProps {

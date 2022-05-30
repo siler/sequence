@@ -1,6 +1,5 @@
 import { ChevronRightIcon, ChevronLeftIcon } from '@heroicons/react/solid';
-import { setMenuOpen } from '../store';
-import { dispatchFn } from '../store';
+import { dispatchFn, setMenuOpen } from '../state';
 
 export interface MenuButtonProps {
    dispatch: dispatchFn;
