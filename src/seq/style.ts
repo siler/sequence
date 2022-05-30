@@ -68,7 +68,7 @@ export const padAll = (padding: number): Padding => {
 export const defaultStyle = (): Style => {
    return {
       frame: {
-         padding: padAll(10),
+         padding: padAll(25),
       },
       lifeline: {
          padding: padAll(10),

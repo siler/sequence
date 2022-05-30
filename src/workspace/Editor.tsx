@@ -1,31 +1,40 @@
-import { Compartment, EditorState, Extension, Text } from '@codemirror/state';
+import { Compartment, EditorState, Text } from '@codemirror/state';
 import {
    EditorView,
+   keymap,
    PluginValue,
    ViewPlugin,
    ViewUpdate,
 } from '@codemirror/view';
 import { basicSetup } from '@codemirror/basic-setup';
 import { useEffect, useMemo, useRef } from 'react';
-import { debounce } from './debounce';
-import { seq } from './seq/language';
+import { debounce } from '../debounce';
+import { seq } from '../seq/language';
+import { dispatchFn } from '../store';
+import { setCode } from '../store';
+import { indentWithTab } from '@codemirror/commands';
+import './Editor.css';
 
 export type OnEditorUpdate = { (content: string): void };
 
 export type EditorProps = {
-   extensions: Extension[];
-   onUpdate: OnEditorUpdate;
+   dispatch: dispatchFn;
    text: string;
 };
 
 /**
  * component for the seq editor
  */
-const Editor = ({ extensions, onUpdate, text }: EditorProps) => {
-   const notifier = useMemo(() => updateNotifier([onUpdate]), [onUpdate]);
+export const Editor = ({ dispatch, text }: EditorProps) => {
+   const notifier = useMemo(
+      () => newUpdateNotifier([(code: string) => dispatch(setCode(code))]),
+      [dispatch]
+   );
 
    const editorState = useMemo(() => {
       const languageConf = new Compartment();
+
+      console.log('creating editor state');
 
       return EditorState.create({
          doc: text,
@@ -33,7 +42,7 @@ const Editor = ({ extensions, onUpdate, text }: EditorProps) => {
             basicSetup,
             notifier,
             languageConf.of(seq()),
-            ...extensions,
+            keymap.of([indentWithTab]),
          ],
       });
 
@@ -42,13 +51,14 @@ const Editor = ({ extensions, onUpdate, text }: EditorProps) => {
       // is the source of truth for these changes, we can leave
       // it be.
       // eslint-disable-next-line react-hooks/exhaustive-deps
-   }, [notifier, extensions]);
+   }, [notifier]);
 
    // then set up the view
    const parent = useRef(null);
 
    useEffect(() => {
       if (!parent.current) {
+         console.log('no parent, leaving early');
          return;
       }
 
@@ -68,13 +78,11 @@ const Editor = ({ extensions, onUpdate, text }: EditorProps) => {
    return <div ref={parent} />;
 };
 
-export default Editor;
-
 /**
  * creates a new ViewPlugin which calls a list of OnEditorUpdate functions
  * when the document state changes.
  */
-const updateNotifier = <V extends PluginValue>(
+const newUpdateNotifier = <V extends PluginValue>(
    onUpdates: OnEditorUpdate[]
 ): ViewPlugin<V> => {
    return ViewPlugin.fromClass(

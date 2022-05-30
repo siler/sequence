@@ -1,0 +1,11 @@
+.screen-window-height {
+   height: calc(100vh - 1rem);
+}
+
+.gutter {
+   @apply bg-gray-300;
+}
+
+.gutter-horizontal {
+   cursor: col-resize;
+}

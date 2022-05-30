@@ -6,9 +6,10 @@ import {
    depadBox,
    distance,
    inclinationAngle as angleFromXAxis,
+   Point,
 } from './layout';
 import { Diagram, Lifeline, Signal } from './model';
-import { LifelineStyle, SignalStyle, Style } from './style';
+import { LifelineStyle, SignalStyle, Style, vertical } from './style';
 
 export const render = (
    graphics: Graphics,
@@ -25,6 +26,27 @@ export const render = (
    if (scale) {
       graphics.scale(scale, scale);
    }
+
+   const lifeline = diagram.lifelines.slice(-1)[0];
+   let bottomRight: Point;
+   if (!lifeline) {
+      bottomRight = { x: 0, y: 0 };
+   } else {
+      bottomRight = {
+         x:
+            right(diagram.lifelines.slice(-1)[0].box) +
+            style.frame.padding.right,
+         y:
+            lifeline.box.height +
+            diagram.lifelineHeight +
+            vertical(style.frame.padding),
+      };
+   }
+
+   withState(graphics, () => {
+      graphics.fillStyle('#fff');
+      graphics.rect(0, 0, bottomRight.x, bottomRight.y).fill();
+   });
 
    for (const lifeline of diagram.lifelines) {
       drawLifeline(lifeline, diagram.lifelineHeight, graphics, style.lifeline);

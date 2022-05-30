@@ -28,7 +28,7 @@ export interface Extent {
    readonly height: number;
 }
 
-export const padExtent = (box: Extent, padding: Padding): Extent => {
+export const pad = (box: Extent, padding: Padding): Extent => {
    const width = box.width + horizontal(padding);
    const height = box.height + vertical(padding);
 
@@ -78,12 +78,12 @@ export const layout = (
 
    const signals = layoutSignals(lifelines, parsed.messages, measurer, style);
 
+   const signalsHeight = signals
+      .map((signal) => signal.box.height + signal.delayHeight)
+      .reduce((val, curr) => val + curr, 0);
+
    const lifelineHeight =
-      signals
-         .map((signal) => signal.box.height + signal.delayHeight)
-         .reduce((val, curr) => val + curr) +
-      style.lifeline.margin.bottom +
-      style.signal.font.size;
+      style.lifeline.margin.bottom + signalsHeight + style.signal.font.size;
 
    const size = computeSize(lifelines, lifelineHeight, style);
 
@@ -126,7 +126,6 @@ const layoutLifelines = (
    measurer: Measurer,
    topLeft: Point
 ): Lifeline[] => {
-   console.log(topLeft);
    let nextLeft = topLeft.x;
 
    const extents = participants.map((participant) =>
@@ -138,10 +137,7 @@ const layoutLifelines = (
       const y = topLeft.y;
       const width = extents[idx].width;
       const height = style.font.size;
-      const extent = padExtent(
-         padExtent({ width, height }, style.padding),
-         style.margin
-      );
+      const extent = pad(pad({ width, height }, style.padding), style.margin);
       const box = { x, y, ...extent };
       const lifeline = { name: participant.name, box };
 
@@ -286,7 +282,15 @@ const widen = (segments: Segment[], span: Span, width: number) => {
       return;
    }
 
-   const slice = segments.slice(span.left, span.right);
+   // 'a -> a' has an equal span, but uses the width to the right.
+   let right;
+   if (span.right - span.left < 1) {
+      right = span.left + 1;
+   } else {
+      right = span.right;
+   }
+
+   const slice = segments.slice(span.left, right);
    slice.sort((a, b) => a.width - b.width);
 
    while (remaining > 0) {
