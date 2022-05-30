@@ -247,9 +247,9 @@ const messageSpan = (segments: Segment[], message: Message): Span => {
    } else {
       return {
          left: idxA,
-         right: idxB,
+         right: idxA,
          direction: 'none',
-         width: calculateWidth(segments, idxA, idxB),
+         width: calculateWidth(segments, idxA, idxA + 1),
       };
    }
 };
@@ -387,13 +387,13 @@ const createSignals = (
       const width = right - left;
 
       const height =
-         (message.label ? myStyle.font.size : 0.0) +
+         (message.label || span.direction == 'none' ? myStyle.font.size : 0.0) +
          vertical(myStyle.padding) +
          vertical(myStyle.margin);
 
       const delayHeight = message.delay ? message.delay * 10 : 0;
 
-      const box = { x: left, y: y, width, height };
+      const box = { x: left, y, width, height };
 
       signals.push({
          box,

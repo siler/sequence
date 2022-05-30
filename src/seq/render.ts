@@ -7,6 +7,7 @@ import {
    distance,
    inclinationAngle as angleFromXAxis,
    Point,
+   Extent,
 } from './layout';
 import { Diagram, Lifeline, Signal } from './model';
 import { LifelineStyle, SignalStyle, Style, vertical } from './style';
@@ -125,9 +126,14 @@ const applySignalTransform = (
    }
 
    graphics.translate(a.x, a.y);
-   graphics.rotate(angleFromXAxis(a, b));
 
-   return distance(a, b);
+   if (signal.direction === 'none') {
+      return style.font.size * 2;
+   } else {
+      graphics.rotate(angleFromXAxis(a, b));
+
+      return distance(a, b);
+   }
 };
 
 const drawSignalLine = (
@@ -147,41 +153,58 @@ const drawSignalLine = (
             graphics.setLineDash([style.lineWidth * 2, style.lineWidth * 2]);
          }
 
-         graphics.beginPath();
-         graphics.moveTo(0, 0);
-         graphics.lineTo(length, 0);
-         graphics.stroke();
+         if (signal.direction === 'none') {
+            const padded = depadBox(signal.box, style.margin);
+            const radius = 5;
+            const startY = 0 - padded.height / 2;
+            graphics.beginPath();
+            graphics.moveTo(0, startY);
+            graphics.lineTo(length - radius, startY);
+            graphics.arcTo(length, startY, length, startY + radius, 5);
+            graphics.lineTo(length, signal.delayHeight - radius);
+            graphics.arcTo(
+               length,
+               signal.delayHeight,
+               length - radius,
+               signal.delayHeight,
+               5
+            );
+            graphics.lineTo(0, signal.delayHeight).stroke();
+         } else {
+            graphics.beginPath();
+            graphics.moveTo(0, 0);
+            graphics.lineTo(length, 0);
+            graphics.stroke();
+         }
       });
-
-      const arrowWidth = style.arrowWidth;
-      const arrowHeight = style.arrowHeight;
-
-      const leftArrow = () => {
-         graphics.moveTo(arrowWidth, -arrowHeight);
-         graphics.lineTo(0, 0);
-         graphics.lineTo(arrowWidth, arrowHeight);
-      };
-
-      graphics.beginPath();
 
       switch (signal.direction) {
          case 'ltr':
-            graphics.moveTo(length - arrowWidth, -arrowHeight);
-            graphics.lineTo(length, 0);
-            graphics.lineTo(length - arrowWidth, arrowHeight);
+            drawArrow(
+               graphics,
+               style.arrow,
+               false,
+               signal.props.arrow === 'filled',
+               { x: length, y: 0 }
+            );
             break;
          case 'rtl':
-            leftArrow();
+            drawArrow(
+               graphics,
+               style.arrow,
+               true,
+               signal.props.arrow === 'filled'
+            );
             break;
          case 'none':
-            leftArrow();
+            drawArrow(
+               graphics,
+               style.arrow,
+               true,
+               signal.props.arrow === 'filled',
+               { x: 0, y: signal.delayHeight }
+            );
             break;
-      }
-
-      if (signal.props.arrow === 'filled') {
-         graphics.closePath().fill();
-      } else {
-         graphics.stroke();
       }
    });
 };
@@ -198,15 +221,31 @@ const drawSignalLabel = (
       withState(graphics, () => {
          const { family, size, weight, style: fontStyle } = style.font;
          graphics.setFont(family, size, weight, fontStyle);
-         graphics.textAlign('center');
-
-         const midpoint = length / 2;
-         const height = style.padding.bottom;
 
          graphics.lineWidth(4);
          graphics.strokeStyle('#fff');
-         graphics.strokeText(label, midpoint, -height);
-         graphics.fillText(label, midpoint, -height);
+
+         if (signal.direction === 'none') {
+            graphics.textAlign('left');
+
+            // normal spacing and a little extra depending on font size
+            const x =
+               style.margin.left + style.padding.left + style.font.size / 2;
+
+            // midpoint of the span, offset one pixel from the base line
+            const y = signal.delayHeight / 2 - 1;
+
+            graphics.strokeText(label, x, y);
+            graphics.fillText(label, x, y);
+         } else {
+            graphics.textAlign('center');
+
+            const midpoint = length / 2;
+            const height = style.padding.bottom;
+
+            graphics.strokeText(label, midpoint, -height);
+            graphics.fillText(label, midpoint, -height);
+         }
       });
    }
 };
@@ -217,4 +256,30 @@ const withState = (graphics: Graphics, f: () => void): void => {
    f();
 
    graphics.restore();
+};
+
+const drawArrow = (
+   graphics: Graphics,
+   arrow: Extent,
+   facingLeft: boolean,
+   fill: boolean,
+   point: Point = { x: 0, y: 0 }
+) => {
+   graphics.beginPath();
+
+   if (facingLeft) {
+      graphics.moveTo(point.x + arrow.width, point.y - arrow.height);
+      graphics.lineTo(point.x, point.y);
+      graphics.lineTo(point.x + arrow.width, point.y + arrow.height);
+   } else {
+      graphics.moveTo(point.x - arrow.width, point.y - arrow.height);
+      graphics.lineTo(point.x, point.y);
+      graphics.lineTo(point.x - arrow.width, point.y + arrow.height);
+   }
+
+   if (fill) {
+      graphics.closePath().fill();
+   } else {
+      graphics.stroke();
+   }
 };

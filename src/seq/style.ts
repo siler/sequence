@@ -1,3 +1,5 @@
+import { Extent } from './layout';
+
 export interface Style {
    readonly frame: FrameStyle;
    readonly lifeline: LifelineStyle;
@@ -21,8 +23,7 @@ export interface SignalStyle {
    readonly margin: Padding;
    readonly font: Font;
    readonly lineWidth: number;
-   readonly arrowWidth: number;
-   readonly arrowHeight: number;
+   readonly arrow: Extent;
 }
 
 export type FontWeight = 'normal' | 'bold';
@@ -82,8 +83,10 @@ export const defaultStyle = (): Style => {
          margin: padAll(0),
          font: newFont('Helvetica', 12),
          lineWidth: 1,
-         arrowWidth: 15.0,
-         arrowHeight: 6.0,
+         arrow: {
+            width: 15.0,
+            height: 6.0,
+         },
       },
    };
 };
