@@ -11,7 +11,8 @@ import { indentWithTab } from '@codemirror/commands';
 import { useEffect, useMemo, useRef } from 'react';
 import { debounce } from '../debounce';
 import { sequence } from '../sequence';
-import { dispatchFn, setCode } from '../state';
+import { dispatchFn, setCode, setDiagram } from '../state';
+import { ParsedDiagram } from '../sequence';
 import './Editor.css';
 
 export type OnEditorUpdate = { (content: string): void };
@@ -40,7 +41,14 @@ export const Editor = ({ dispatch, text }: EditorProps) => {
          extensions: [
             basicSetup,
             notifier,
-            languageConf.of(sequence()),
+            languageConf.of(
+               sequence(
+                  (diagram: ParsedDiagram) => dispatch(setDiagram(diagram)),
+                  (error) => {
+                     console.log(error);
+                  }
+               )
+            ),
             keymap.of([indentWithTab]),
          ],
       });

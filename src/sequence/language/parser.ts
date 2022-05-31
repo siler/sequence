@@ -26,6 +26,11 @@ export interface ParsedDiagram {
    readonly messages: Message[];
 }
 
+export const newEmptyDiagram = (): ParsedDiagram => ({
+   participants: [],
+   messages: [],
+});
+
 // A named participant
 export interface Participant {
    readonly name: string;

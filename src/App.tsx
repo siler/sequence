@@ -24,7 +24,12 @@ export const App = () => {
             code={state.code}
          />
          <MenuButton dispatch={dispatch} open={state.menuOpen} />
-         <Workspace dispatch={dispatch} text={state.code} canvas={canvas} />
+         <Workspace
+            dispatch={dispatch}
+            text={state.code}
+            diagram={state.diagram}
+            canvas={canvas}
+         />
       </div>
    );
 };

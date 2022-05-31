@@ -1,13 +1,14 @@
 import React, { useEffect } from 'react';
 import Split from 'react-split';
 import { Editor } from './Editor';
-import { draw } from '../sequence';
+import { drawDiagram, ParsedDiagram } from '../sequence';
 import { dispatchFn } from '../state';
 import './Workspace.css';
 
 export interface WorkspaceProps {
    dispatch: dispatchFn;
    text: string;
+   diagram: ParsedDiagram;
    canvas: React.MutableRefObject<HTMLCanvasElement | null>;
 }
 
@@ -16,12 +17,17 @@ export interface WorkspaceProps {
  *
  * includes a primary workspace split between an editor and a renderer.
  */
-export const Workspace = ({ dispatch, text, canvas }: WorkspaceProps) => {
+export const Workspace = ({
+   dispatch,
+   text,
+   diagram,
+   canvas,
+}: WorkspaceProps) => {
    useEffect(() => {
       if (canvas.current) {
-         draw(text, canvas.current, 1);
+         drawDiagram(diagram, canvas.current, 1);
       }
-   }, [text, canvas]);
+   }, [diagram, canvas]);
 
    return (
       <Split

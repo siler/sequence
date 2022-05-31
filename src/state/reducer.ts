@@ -13,6 +13,9 @@ export const reducer = (state: State, action: Action) => {
          case 'setCode':
             draft.code = action.code;
             break;
+         case 'setDiagram':
+            draft.diagram = action.diagram;
+            break;
          default: {
             const exhaustiveCheck: never = action;
             return exhaustiveCheck;

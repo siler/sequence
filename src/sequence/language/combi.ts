@@ -45,13 +45,16 @@ export const withValue = <T, TN>(
    };
 };
 
+export interface ErrorContent {
+   readonly ctx: Context;
+   readonly description: string;
+}
+
 /**
  * indicates a failed parse attempt
  */
-export interface Error {
+export interface Error extends ErrorContent{
    readonly type: 'error';
-   readonly ctx: Context;
-   readonly description: string;
    readonly cause?: Error;
 }
 
@@ -78,10 +81,8 @@ export const fail = (error: Error, message: string): Failure => {
 /**
  * indicates a failed parse attempt
  */
-export interface Failure {
+export interface Failure extends ErrorContent {
    readonly type: 'failure';
-   readonly ctx: Context;
-   readonly description: string;
    readonly cause?: Error | Failure;
 }
 

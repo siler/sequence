@@ -1,6 +1,5 @@
-import { Graphics } from './graphics';
 import { newBrowserCanvas } from './graphics/browserCanvas';
-import { parseDiagram } from './language/parser';
+import { parseDiagram, ParsedDiagram } from './language/parser';
 import { Extent, layout } from './layout';
 import { render } from './render';
 import { defaultStyle } from './style';
@@ -10,15 +9,8 @@ export const draw = (
    canvas: HTMLCanvasElement,
    scale: number
 ) => {
-   parseAndRender(code, newBrowserCanvas(canvas), canvas, scale);
-};
+   const graphics = newBrowserCanvas(canvas);
 
-const parseAndRender = (
-   code: string,
-   graphics: Graphics,
-   canvas: HTMLCanvasElement,
-   scale: number
-) => {
    const result = parseDiagram(code);
    if (result.type === 'failure') {
       return;
@@ -28,6 +20,18 @@ const parseAndRender = (
    const diagram = layout(result.diagram, canvas, style);
    fitCanvasSize(canvas, diagram.size, scale);
    render(graphics, diagram, style, scale);
+};
+
+export const drawDiagram = (
+   diagram: ParsedDiagram,
+   canvas: HTMLCanvasElement,
+   scale: number
+) => {
+   const graphics = newBrowserCanvas(canvas);
+   const style = defaultStyle();
+   const laidOutDiagram = layout(diagram, canvas, style);
+   fitCanvasSize(canvas, laidOutDiagram.size, scale);
+   render(graphics, laidOutDiagram, style, scale);
 };
 
 const fitCanvasSize = (

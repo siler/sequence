@@ -1,11 +1,17 @@
 import { completeFromList } from '@codemirror/autocomplete';
 import { LanguageSupport, LRLanguage } from '@codemirror/language';
 import { styleTags, tags as t } from '@lezer/highlight';
-import { parser } from './gen/parser';
-import { linter } from './linter';
+import { parser } from './gen';
+import { makeLinter, OnError, OnParse } from './linter';
 
-export const sequence = () => {
-   return new LanguageSupport(seqLanguage, [seqCompletion, linter]);
+import type { ParsedDiagram } from './parser';
+export type { ParsedDiagram };
+export { parseDiagram, newEmptyDiagram } from './parser';
+export const sequence = (onParse: OnParse, onError: OnError) => {
+   return new LanguageSupport(seqLanguage, [
+      seqCompletion,
+      makeLinter(onParse, onError),
+   ]);
 };
 
 const parserWithMetadata = parser.configure({

@@ -1,4 +1,6 @@
-export type Action = SetMenuOpen | SetCode;
+import { ParsedDiagram } from '../sequence/language/parser';
+
+export type Action = SetMenuOpen | SetCode | SetDiagram;
 
 export interface SetUrlEncode {
    readonly type: 'setUrlEncode';
@@ -28,4 +30,14 @@ export interface SetCode {
 export const setCode = (code: string): SetCode => ({
    type: 'setCode',
    code,
+});
+
+export interface SetDiagram {
+   readonly type: 'setDiagram';
+   readonly diagram: ParsedDiagram;
+}
+
+export const setDiagram = (diagram: ParsedDiagram): SetDiagram => ({
+   type: 'setDiagram',
+   diagram,
 });
