@@ -145,14 +145,14 @@ export const str = (match: string): Parser<string> => {
    return (ctx) => {
       const index = ctx.index + match.length;
       if (index >= ctx.input.length) {
-         return newError(ctx, `matching "${match}"`);
+         return newError(ctx, `failure to match str "${match}"`);
       }
 
       if (ctx.input.substring(ctx.index, index) === match) {
          return newSuccess(withIndex(ctx, index), match);
       }
 
-      return newError(ctx, `str: matching "${match}"`);
+      return newError(ctx, `failed to match str "${match}"`);
    };
 };
 
@@ -170,7 +170,7 @@ export const regex = (re: RegExp, expected: string): Parser<string> => {
          return newSuccess(withIndex(ctx, ctx.index + res[0].length), res[0]);
       }
 
-      return newError(ctx, `regex: matching ${expected}`);
+      return newError(ctx, `failure to match regex ${expected}`);
    };
 };
 
@@ -183,7 +183,7 @@ export const eof = (): Parser<null> => {
          return newSuccess(ctx, null);
       }
 
-      return newError(ctx, 'eof: not found');
+      return newError(ctx, 'failure to match eof');
    };
 };
 
@@ -209,7 +209,7 @@ export const any = <T>(parsers: Parser<T>[]): Parser<T> => {
       let furthestRes: Error | null = null;
 
       if (parsers.length === 0) {
-         return newFailure(ctx, 'any: must have at least one parser');
+         return newFailure(ctx, 'failure to pass at least one parser to any');
       }
 
       for (const parser of parsers) {
@@ -295,7 +295,7 @@ export const many = <T>(parser: Parser<T>): Parser<T[]> => {
       }
 
       if (values.length === 0) {
-         return newError(nextCtx, 'manyOne: requires at least one match');
+         return newError(nextCtx, 'failure to match at least one in manyOne');
       }
 
       return newSuccess(nextCtx, values);

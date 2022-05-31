@@ -13,11 +13,13 @@ export const DownloadPng: React.FC<DownloadPngProps> = ({ canvas, open }) => {
          return;
       }
 
-      const newUrl = canvas
-         .toDataURL('image/png')
-         .replace(/^data:image/, 'data:application/octet-stream;');
+      const image = canvas.toDataURL('image/png', 10);
+      const octetStream = image.replace(
+         /^data:image\/png;/,
+         'data:application/octet-stream;'
+      );
 
-      setUrl(newUrl);
+      setUrl(octetStream);
    }, [canvas, url, open]);
    return (
       <a download="diagram.png" href={url}>

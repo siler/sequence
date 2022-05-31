@@ -1,16 +1,16 @@
 import { Graphics } from './graphics';
 import {
+   Extent,
+   Point,
    bottom,
-   right,
    centerX,
    depadBox,
    distance,
-   inclinationAngle as angleFromXAxis,
-   Point,
-   Extent,
+   inclinationAngle,
+   right,
 } from './layout';
 import { Diagram, Lifeline, Signal } from './model';
-import { LifelineStyle, SignalStyle, Style, vertical } from './style';
+import { LifelineStyle, SignalStyle, Style } from './style';
 
 export const render = (
    graphics: Graphics,
@@ -38,9 +38,9 @@ export const render = (
             right(diagram.lifelines.slice(-1)[0].box) +
             style.frame.padding.right,
          y:
-            lifeline.box.height +
+            bottom(lifeline.box) +
             diagram.lifelineHeight +
-            vertical(style.frame.padding),
+            style.frame.padding.bottom,
       };
    }
 
@@ -156,7 +156,7 @@ const applySignalTransform = (
    if (signal.direction === 'none') {
       return style.font.size * 2;
    } else {
-      graphics.rotate(angleFromXAxis(a, b));
+      graphics.rotate(inclinationAngle(a, b));
 
       return distance(a, b);
    }

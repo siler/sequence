@@ -2,16 +2,22 @@ import { useEffect, useReducer, useRef } from 'react';
 import { Menu, MenuButton } from './menu';
 import { Workspace } from './workspace';
 import { reducer, initializer, initialState } from './state';
-
-export const diagramKey = 'seq-diagram';
+import { setCachedDiagram } from './store';
+import { useSearchParams } from 'react-router-dom';
 
 export const App = () => {
-   const [state, dispatch] = useReducer(reducer, initialState, initializer);
+   const [params] = useSearchParams();
+   console.log(JSON.stringify(params));
+   const [state, dispatch] = useReducer(
+      reducer,
+      initialState,
+      initializer(params.get('d') || undefined)
+   );
    const canvas = useRef<HTMLCanvasElement | null>(null);
 
    useEffect(() => {
       if (state.code) {
-         localStorage.setItem(diagramKey, state.code);
+         setCachedDiagram(state.code);
       }
    }, [state.code]);
 

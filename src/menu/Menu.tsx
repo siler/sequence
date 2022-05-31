@@ -12,7 +12,7 @@ interface MenuProps {
 
 export const Menu: React.FC<MenuProps> = ({ dispatch, open, code, canvas }) => {
    const always =
-      'fixed top-2 right-2 transition bg-indigo-500 text-white flex flex-col p-4 shadow shadow-black/50 without-ring';
+      'fixed top-2 right-2 transition bg-indigo-500 text-white flex flex-col p-4 shadow shadow-black/50 focus:ring-0';
    const whenOpen = 'translate-x-0 opacity-100';
    const whenClosed = 'translate-x-48 opacity-100';
 

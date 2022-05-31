@@ -4,7 +4,7 @@ import {
 } from '@heroicons/react/outline';
 import React, { useEffect, useMemo, useState } from 'react';
 import CopyToClipboard from 'react-copy-to-clipboard';
-import { encode } from '../encode';
+import { encode } from '../urlCode';
 
 export interface CopyEditLinkProps {
    code: string;
@@ -12,21 +12,23 @@ export interface CopyEditLinkProps {
 }
 
 export const CopyEditLink: React.FC<CopyEditLinkProps> = ({ code, open }) => {
-   const [compressed, setCompressed] = useState('');
+   const [encoded, setEncoded] = useState('');
    const [showCopied, setShowCopied] = useState(false);
-   const [lastTimeout, setLastTimeout] = useState<number | null>(null);
+   const [lastTimeout, setLastTimeout] = useState<number | undefined>(
+      undefined
+   );
 
    useEffect(() => {
       if (!open) {
          return;
       }
 
-      setCompressed(encode(code));
+      setEncoded(encode(code));
    }, [code, open]);
 
    const clipboard = useMemo(() => {
       if (showCopied) {
-         // this padding helps the icons overlap better
+         // the padding helps the icons overlap better
          return (
             <ClipboardCheckIcon className=" h-5 w-5 pr-[1px] text-green-300" />
          );
@@ -35,22 +37,25 @@ export const CopyEditLink: React.FC<CopyEditLinkProps> = ({ code, open }) => {
       }
    }, [showCopied]);
 
+   const debouncedShowCopied = () => {
+      if (lastTimeout !== undefined) {
+         window.clearTimeout(lastTimeout);
+      }
+
+      setShowCopied(true);
+
+      const timeout = window.setTimeout(() => {
+         setShowCopied(false);
+         setLastTimeout(undefined);
+      }, 500);
+
+      setLastTimeout(timeout);
+   };
+
    return (
       <CopyToClipboard
-         onCopy={() => {
-            if (lastTimeout !== null) {
-               window.clearTimeout(lastTimeout);
-            }
-
-            setShowCopied(true);
-            setLastTimeout(
-               window.setTimeout(() => {
-                  setShowCopied(false);
-                  setLastTimeout(null);
-               }, 500)
-            );
-         }}
-         text={`http://127.0.0.1:3000/edit/?d=${compressed}`}
+         onCopy={debouncedShowCopied}
+         text={`http://127.0.0.1:3000/edit/?d=${encoded}`}
       >
          <div
             tabIndex={-1}
