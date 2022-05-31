@@ -22,7 +22,7 @@ export type EditorProps = {
 };
 
 /**
- * component for the seq editor
+ * component for the sequence editor
  */
 export const Editor = ({ dispatch, text }: EditorProps) => {
    const notifier = useMemo(
@@ -86,16 +86,14 @@ const newUpdateNotifier = <V extends PluginValue>(
 ): ViewPlugin<V> => {
    return ViewPlugin.fromClass(
       class {
-         view: EditorView;
-         debounce: (arg: Text) => void;
+         readonly debounce: (arg: Text) => void;
 
-         constructor(view: EditorView) {
+         constructor(public readonly view: EditorView) {
             this.view = view;
-            this.debounce = debounce((doc) => {
-               onUpdates.forEach((onUpdate) =>
-                  onUpdate(doc.toJSON().join('\n'))
-               );
-            }, 100);
+            this.debounce = debounce(100, (doc) => {
+               const str = doc.toJSON().join('\n');
+               onUpdates.forEach((onUpdate) => onUpdate(str));
+            });
          }
 
          update(update: ViewUpdate) {

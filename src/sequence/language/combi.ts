@@ -17,11 +17,11 @@ export type Result<T> = Success<T> | Error | Failure;
 /**
  * indicates a successful parse, and contains the resulting value
  */
-export type Success<T> = {
+export interface Success<T> {
    type: 'success';
    ctx: Context;
    value: T;
-};
+}
 
 export const newSuccess = <T>(ctx: Context, value: T): Success<T> => {
    return {
@@ -48,12 +48,12 @@ export const withValue = <T, TN>(
 /**
  * indicates a failed parse attempt
  */
-export type Error = {
+export interface Error {
    readonly type: 'error';
    readonly ctx: Context;
    readonly description: string;
    readonly cause?: Error;
-};
+}
 
 export const newError = (
    ctx: Context,
@@ -71,19 +71,19 @@ export const newError = (
 /**
  * helper to turn an error into a failure
  */
-export const fail = (error: Error): Failure => {
-   return newFailure(error.ctx, 'fail', error.cause);
+export const fail = (error: Error, message: string): Failure => {
+   return newFailure(error.ctx, message, error);
 };
 
 /**
  * indicates a failed parse attempt
  */
-export type Failure = {
+export interface Failure {
    readonly type: 'failure';
    readonly ctx: Context;
    readonly description: string;
    readonly cause?: Error | Failure;
-};
+}
 
 export const newFailure = (
    ctx: Context,
@@ -125,12 +125,12 @@ export const withContext = (
 /**
  * causes any errors produced by the passed parser to be turned into failures
  */
-export const must = <T>(parser: Parser<T>): Parser<T> => {
+export const must = <T>(parser: Parser<T>, message: string): Parser<T> => {
    return (ctx) => {
       const res = parser(ctx);
 
       if (res.type === 'error') {
-         return fail(res);
+         return fail(res, message);
       }
 
       return res;
@@ -151,7 +151,7 @@ export const str = (match: string): Parser<string> => {
          return newSuccess(withIndex(ctx, index), match);
       }
 
-      return newError(ctx, `matching "${match}"`);
+      return newError(ctx, `str: matching "${match}"`);
    };
 };
 
@@ -169,7 +169,7 @@ export const regex = (re: RegExp, expected: string): Parser<string> => {
          return newSuccess(withIndex(ctx, ctx.index + res[0].length), res[0]);
       }
 
-      return newError(ctx, `matching ${expected}`);
+      return newError(ctx, `regex: matching ${expected}`);
    };
 };
 
@@ -182,7 +182,7 @@ export const eof = (): Parser<null> => {
          return newSuccess(ctx, null);
       }
 
-      return newError(ctx, 'matching eof');
+      return newError(ctx, 'eof: not found');
    };
 };
 
@@ -195,7 +195,7 @@ export const discard = <T>(parser: Parser<T>): Parser<null> => {
       if (res.type === 'success') {
          return withValue(res, null);
       } else {
-         return withContext(res, 'discard');
+         return res;
       }
    };
 };
@@ -208,7 +208,7 @@ export const any = <T>(parsers: Parser<T>[]): Parser<T> => {
       let furthestRes: Error | null = null;
 
       if (parsers.length === 0) {
-         return newError(ctx, 'any');
+         return newFailure(ctx, 'any: must have at least one parser');
       }
 
       for (const parser of parsers) {
@@ -217,7 +217,7 @@ export const any = <T>(parsers: Parser<T>[]): Parser<T> => {
             case 'success':
                return res;
             case 'failure':
-               return withContext(res, 'any');
+               return res;
          }
 
          if (!furthestRes || furthestRes.ctx.index < res.ctx.index) {
@@ -226,7 +226,7 @@ export const any = <T>(parsers: Parser<T>[]): Parser<T> => {
       }
 
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      return withContext(furthestRes!, 'any');
+      return furthestRes!;
    };
 };
 
@@ -237,11 +237,8 @@ export const optional = <T>(parser: Parser<T>): Parser<T | undefined> => {
    return (ctx) => {
       const res = parser(ctx);
 
-      switch (res.type) {
-         case 'success':
-            return res;
-         case 'failure':
-            return withContext(res, 'optional');
+      if (res.type === 'success' || res.type === 'failure') {
+         return res;
       }
 
       return newSuccess(ctx, undefined);
@@ -264,7 +261,7 @@ export const manyZero = <T>(parser: Parser<T>): Parser<T[]> => {
          if (res.type === 'error') {
             break;
          } else if (res.type === 'failure') {
-            return withContext(res, 'many');
+            return res;
          }
 
          nextCtx = res.ctx;
@@ -289,7 +286,7 @@ export const many = <T>(parser: Parser<T>): Parser<T[]> => {
          if (res.type === 'error') {
             break;
          } else if (res.type === 'failure') {
-            return withContext(res, 'many');
+            return res;
          }
 
          nextCtx = res.ctx;
@@ -297,7 +294,7 @@ export const many = <T>(parser: Parser<T>): Parser<T[]> => {
       }
 
       if (values.length === 0) {
-         return newError(nextCtx, 'manyOne');
+         return newError(nextCtx, 'manyOne: requires at least one match');
       }
 
       return newSuccess(nextCtx, values);
@@ -319,12 +316,12 @@ export const pair = <A, B>(
    return (ctx) => {
       const resA = parserA(ctx);
       if (resA.type !== 'success') {
-         return withContext(resA, 'pair first');
+         return resA;
       }
 
       const resB = parserB(resA.ctx);
       if (resB.type !== 'success') {
-         return withContext(resB, 'pair second');
+         return resB;
       }
 
       return withValue(resB, { first: resA.value, second: resB.value });
@@ -341,12 +338,12 @@ export const terminated = <A, B>(
    return (ctx) => {
       const resA = parserA(ctx);
       if (resA.type !== 'success') {
-         return withContext(resA, 'terminated first');
+         return resA;
       }
 
       const resB = parserB(resA.ctx);
       if (resB.type !== 'success') {
-         return withContext(resB, 'terminated second');
+         return resB;
       }
 
       return withValue(resB, resA.value);
@@ -364,7 +361,7 @@ export const sequence = <T>(parsers: Parser<T>[]): Parser<T[]> => {
       for (const parser of parsers) {
          const res = parser(nextCtx);
          if (res.type !== 'success') {
-            return withContext(res, 'sequence');
+            return res;
          }
 
          values.push(res.value);
@@ -387,7 +384,7 @@ export const filter = <T>(
 
       const res = parser(ctx);
       if (res.type !== 'success') {
-         return withContext(res, 'filter');
+         return res;
       }
 
       for (const value of res.value) {
@@ -409,7 +406,7 @@ export const filterNull = <T>(parser: Parser<(T | null)[]>): Parser<T[]> => {
       const res = parser(ctx);
 
       if (res.type !== 'success') {
-         return withContext(res, 'filterNull');
+         return res;
       }
 
       for (const value of res.value) {
@@ -423,21 +420,21 @@ export const filterNull = <T>(parser: Parser<(T | null)[]>): Parser<T[]> => {
 };
 
 /**
- * removes all undefineds from the results of a list of parsers
+ * removes all undefineds and nulls from the results of a list of parsers
  */
-export const filterUndefined = <T>(
-   parser: Parser<(T | undefined)[]>
+export const clean = <T>(
+   parser: Parser<(T | null | undefined)[]>
 ): Parser<T[]> => {
    return (ctx) => {
       const values: T[] = [];
       const res = parser(ctx);
 
       if (res.type !== 'success') {
-         return withContext(res, 'filterNull');
+         return res;
       }
 
       for (const value of res.value) {
-         if (value !== undefined) {
+         if (value !== null && value !== undefined) {
             values.push(value);
          }
       }
@@ -456,6 +453,6 @@ export const map = <A, B>(parser: Parser<A>, fn: (val: A) => B): Parser<B> => {
          return withValue(res, fn(res.value));
       }
 
-      return withContext(res, 'map');
+      return res;
    };
 };

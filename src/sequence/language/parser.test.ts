@@ -16,13 +16,17 @@ Cynthia -> Alan
 
    // then
    expect(res).not.toBeNull();
+   expect(res.type).toBe('success');
+   if (res.type !== 'success') {
+      return;
+   }
 
-   expect(res!.participants).toMatchObject([
+   expect(res!.diagram.participants).toMatchObject([
       { name: 'Alan' },
       { name: 'Cynthia' },
       { name: 'Tina' },
    ]);
-   expect(res!.messages).toMatchObject([
+   expect(res!.diagram.messages).toMatchObject([
       { from: 'Alan', to: 'Cynthia' },
       { from: 'Cynthia', to: 'Tina' },
       { from: 'Tina', to: 'Cynthia' },
@@ -52,13 +56,17 @@ int3gra->zEr0 # oh my glob
 
    // then
    expect(res).not.toBeNull();
+   expect(res.type).toBe('success');
+   if (res.type !== 'success') {
+      return;
+   }
 
-   expect(res!.participants).toMatchObject([
+   expect(res!.diagram.participants).toMatchObject([
       { name: name1 },
       { name: name2 },
       { name: name3 },
    ]);
-   expect(res!.messages).toMatchObject([
+   expect(res!.diagram.messages).toMatchObject([
       { from: name1, to: name2 },
       { from: name2, to: name3 },
       { from: name3, to: name2 },
@@ -80,16 +88,20 @@ Cynthia -> Alan
 
    // when
    const res = parseDiagram(input);
+   expect(res.type).toBe('success');
+   if (res.type !== 'success') {
+      return;
+   }
 
    // then
    expect(res).not.toBeNull();
 
-   expect(res!.participants).toMatchObject([
+   expect(res!.diagram.participants).toMatchObject([
       { name: 'Alan' },
       { name: 'Cynthia' },
       { name: 'Tina' },
    ]);
-   expect(res!.messages).toMatchObject([
+   expect(res!.diagram.messages).toMatchObject([
       { from: 'Alan', to: 'Cynthia' },
       { from: 'Cynthia', to: 'Tina' },
       { from: 'Tina', to: 'Cynthia' },

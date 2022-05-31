@@ -2,9 +2,10 @@ import { completeFromList } from '@codemirror/autocomplete';
 import { LanguageSupport, LRLanguage } from '@codemirror/language';
 import { styleTags, tags as t } from '@lezer/highlight';
 import { parser } from './gen/parser';
+import { linter } from './linter';
 
 export const sequence = () => {
-   return new LanguageSupport(seqLanguage, [seqCompletion]);
+   return new LanguageSupport(seqLanguage, [seqCompletion, linter]);
 };
 
 const parserWithMetadata = parser.configure({

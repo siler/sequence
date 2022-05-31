@@ -19,13 +19,13 @@ const parseAndRender = (
    canvas: HTMLCanvasElement,
    scale: number
 ) => {
-   const parsedDiagram = parseDiagram(code);
-   if (!parsedDiagram) {
+   const result = parseDiagram(code);
+   if (result.type === 'failure') {
       return;
    }
 
    const style = defaultStyle();
-   const diagram = layout(parsedDiagram, canvas, style);
+   const diagram = layout(result.diagram, canvas, style);
    fitCanvasSize(canvas, diagram.size, scale);
    render(graphics, diagram, style, scale);
 };

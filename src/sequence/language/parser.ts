@@ -1,12 +1,13 @@
 import {
-   any,
-   discard,
-   eof,
    Error,
    Failure,
+   any,
+   clean,
+   discard,
+   eof,
    filterNull,
-   manyZero,
    many,
+   manyZero,
    map,
    must,
    optional,
@@ -15,7 +16,6 @@ import {
    sequence,
    str,
    terminated,
-   filterUndefined,
 } from './combi';
 
 // A parsed sequence diagram with ordered lists of participants and messages
@@ -45,48 +45,29 @@ export interface Message extends MessageProperties {
    readonly to: string;
 }
 
+export type ParseResult = ParseSuccess | ParseFailure;
+export interface ParseSuccess {
+   type: 'success';
+   diagram: ParsedDiagram;
+}
+
+export interface ParseFailure {
+   type: 'failure';
+   reason: Failure | Error;
+}
+
 // parse a SequenceDiagram from a string
-export const parseDiagram = (code: string): ParsedDiagram | null => {
+export const parseDiagram = (code: string): ParseResult => {
    if (code.slice(-1) != '\n') {
       code += '\n';
    }
 
    const result = diagram({ input: code, index: 0 });
    if (result.type === 'success') {
-      return result.value;
+      return { type: 'success', diagram: result.value };
    }
 
-   const cause: (err: Error | Failure) => string = (err) => {
-      if (err.cause) {
-         return cause(err.cause) + `  then "${err.description}"\n`;
-      }
-
-      return `cause: ${err.description}\n`;
-   };
-
-   const error = cause(result);
-
-   const idx = result.ctx.index;
-   let line = 1;
-   let char = 0;
-   for (const ch of result.ctx.input.slice(0, idx)) {
-      char += 1;
-      if (ch == '\n') {
-         char = 0;
-         line += 1;
-      }
-   }
-
-   const sample = result.ctx.input.slice(
-      result.ctx.index,
-      result.ctx.index + 40
-   );
-
-   console.log(`parse error: "${error}"`);
-   console.log(`remaining: "${sample}"`);
-   console.log(`Ln ${line}, Col ${char}`);
-
-   return null;
+   return { type: 'failure', reason: result };
 };
 
 /**
@@ -125,29 +106,31 @@ const skipZero = discard(manyZero(any([ws, comment])));
  * parses out the participant name and creates a Participant
  */
 const participant = map(
-   filterNull(
-      sequence([discard(str('participant')), skip, must(simpleParticipant)])
+   clean(
+      sequence([
+         discard(str('participant')),
+         skip,
+         must(simpleParticipant, 'expected participant name'),
+      ])
    ),
    ([name]) => ({ name })
 );
 
 const arrow = map(
-   filterUndefined(
-      filterNull(
-         sequence([
-            discard(str('-')),
-            optional(str('-')),
-            optional(str('-')),
-            discard(str('>')),
-            optional(str('>')),
-         ])
-      )
+   clean(
+      sequence([
+         discard(str('-')),
+         optional(str('-')),
+         optional(str('-')),
+         discard(str('>')),
+         optional(str('>')),
+      ])
    ),
    (strs) => strs.reduce((val, curr) => val + curr, '')
 );
 
 const delay = map(
-   filterNull(
+   clean(
       sequence([
          discard(str('(')),
          regex(/[0-9]+/g, 'number'),
@@ -165,10 +148,10 @@ const fromTo = map(
       sequence([
          simpleParticipant,
          skipZero,
-         must(arrow),
+         must(arrow, 'expected signal arrow'),
          optional(delay),
          skipZero,
-         must(simpleParticipant),
+         must(simpleParticipant, 'expected signal "to" participant'),
       ])
    ),
    ([from, arrow, delay, to]) => ({
@@ -186,7 +169,13 @@ const fromTo = map(
  * parses a message label as a string
  */
 const label = map(
-   filterNull(sequence([discard(str('label:')), skipZero, must(restOfLine)])),
+   clean(
+      sequence([
+         discard(str('label:')),
+         skipZero,
+         must(restOfLine, 'expected label content'),
+      ])
+   ),
    ([label]) => label
 );
 
@@ -206,11 +195,11 @@ const diagram = map(
    terminated(
       pair(
          // participants must come before messages
-         filterNull(manyZero(any([participant, skip]))),
+         clean(manyZero(any([participant, skip]))),
          // messages terminated with an empty eof line
-         filterNull(manyZero(any([message, skip])))
+         clean(manyZero(any([message, skip])))
       ),
-      eof()
+      must(eof(), 'expected signal')
    ),
    ({ first: participants, second: messages }) =>
       makeDiagram(participants, messages)
@@ -258,8 +247,10 @@ const processMessage = (
 
    if (delayStr) {
       delay = parseFloat(delayStr);
-      if (isNaN(delay)) {
+      if (isNaN(delay) || delay < 0) {
          delay = 0;
+      } else if (delay > 50) {
+         delay = 50;
       }
    }
 
