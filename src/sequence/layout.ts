@@ -60,14 +60,27 @@ export const depadBox = (box: Box, padding: Padding): Box => {
    return { x, y, width, height };
 };
 
+const findTopLeft = (parsed: ParsedDiagram, style: Style): Point => {
+   if (parsed.title) {
+      return {
+         x: style.frame.padding.left,
+         y:
+            style.frame.padding.top +
+            vertical(style.title.padding) +
+            style.title.font.size,
+      };
+   } else {
+      return { x: style.frame.padding.left, y: style.frame.padding.top };
+   }
+};
+
 export const layout = (
    parsed: ParsedDiagram,
    canvas: HTMLCanvasElement,
    style: Style
 ): Diagram => {
    const measurer = newMeasurer(canvas);
-   const padding = style.frame.padding;
-   const topLeft = { x: padding.left, y: padding.top };
+   const topLeft = findTopLeft(parsed, style);
 
    const lifelines = layoutLifelines(
       parsed.participants,
@@ -88,6 +101,7 @@ export const layout = (
    const size = computeSize(lifelines, lifelineHeight, style);
 
    return {
+      title: parsed.title,
       lifelines,
       signals,
       lifelineHeight,

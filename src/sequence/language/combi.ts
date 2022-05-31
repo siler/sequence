@@ -329,6 +329,28 @@ export const pair = <A, B>(
 };
 
 /**
+ * executes both parsers, discarding the first value
+ */
+export const preceded = <A, B>(
+   parserA: Parser<A>,
+   parserB: Parser<B>
+): Parser<B> => {
+   return (ctx) => {
+      const resA = parserA(ctx);
+      if (resA.type !== 'success') {
+         return resA;
+      }
+
+      const resB = parserB(resA.ctx);
+      if (resB.type !== 'success') {
+         return resB;
+      }
+
+      return withValue(resB, resB.value);
+   };
+};
+
+/**
  * executes both parsers, discarding the second value
  */
 export const terminated = <A, B>(

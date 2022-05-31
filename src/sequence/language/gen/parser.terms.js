@@ -3,6 +3,7 @@ export const
   Comment = 1,
   Program = 2,
   ParticipantName = 3,
-  Arrow = 5,
-  Delay = 6,
-  LabelText = 8
+  TitleText = 5,
+  Arrow = 7,
+  Delay = 8,
+  LabelText = 10

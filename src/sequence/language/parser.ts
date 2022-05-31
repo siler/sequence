@@ -16,10 +16,12 @@ import {
    sequence,
    str,
    terminated,
+   preceded,
 } from './combi';
 
 // A parsed sequence diagram with ordered lists of participants and messages
 export interface ParsedDiagram {
+   readonly title?: string;
    readonly participants: Participant[];
    readonly messages: Message[];
 }
@@ -103,12 +105,26 @@ const skip = discard(many(any([ws, comment])));
 const skipZero = discard(manyZero(any([ws, comment])));
 
 /**
+ * parses a title
+ */
+const title = map(
+   clean(
+      sequence([
+         discard(str('title:')),
+         skipZero,
+         must(restOfLine, 'expected title content'),
+      ])
+   ),
+   ([title]) => title
+);
+
+/**
  * parses out the participant name and creates a Participant
  */
 const participant = map(
    clean(
       sequence([
-         discard(str('participant')),
+         discard(str('participant:')),
          skip,
          must(simpleParticipant, 'expected participant name'),
       ])
@@ -116,6 +132,9 @@ const participant = map(
    ([name]) => ({ name })
 );
 
+/**
+ * parses a string containing the extra characters
+ */
 const arrow = map(
    clean(
       sequence([
@@ -129,11 +148,14 @@ const arrow = map(
    (strs) => strs.reduce((val, curr) => val + curr, '')
 );
 
+/**
+ * parses a string representing the numeric amount of the delay
+ */
 const delay = map(
    clean(
       sequence([
          discard(str('(')),
-         regex(/[0-9]+/g, 'number'),
+         regex(/[0-9]+(\.[0-9]*)?/g, 'number'),
          discard(str(')')),
       ])
    ),
@@ -194,28 +216,27 @@ const message = map(
 const diagram = map(
    terminated(
       pair(
-         // participants must come before messages
-         clean(manyZero(any([participant, skip]))),
-         // messages terminated with an empty eof line
-         clean(manyZero(any([message, skip])))
+         preceded(skipZero, optional(title)),
+         pair(
+            // participants must come before messages
+            clean(manyZero(any([participant, skip]))),
+            // messages terminated with an empty eof line
+            clean(manyZero(any([message, skip])))
+         )
       ),
       must(eof(), 'expected signal')
    ),
-   ({ first: participants, second: messages }) =>
-      makeDiagram(participants, messages)
+   ({ first: title, second: { first: participants, second: messages } }) =>
+      makeDiagram(participants, messages, title)
 );
-
-const newParsedDiagram = (
-   participants: Participant[],
-   messages: Message[]
-): ParsedDiagram => ({ participants, messages });
 
 const makeDiagram = (
    participants: Participant[],
-   messages: Message[]
+   messages: Message[],
+   title?: string
 ): ParsedDiagram => {
    const resolvedParticipants = extractParticipants(participants, messages);
-   return newParsedDiagram(resolvedParticipants, messages);
+   return { participants: resolvedParticipants, messages, title };
 };
 
 const extractParticipants = (

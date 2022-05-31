@@ -1,12 +1,13 @@
 @skip { space | Comment } 
 
 @top Program {
+    titleLine?
     participantLine*
     messageFull*
 }
 
 participantLine {
-    @specialize[@name="participant"]<ParticipantName, "participant"> ParticipantName
+    @specialize[@name="participant"]<ParticipantName, "participant"> ":" ParticipantName
 }
 
 messageFull {
@@ -18,6 +19,9 @@ messageLine {
 }
 
 @skip { } {
+    titleLine {
+        @specialize[@name="title"]<ParticipantName, "title"> ":" TitleText lineEnd
+    }
     labelLine {
         @specialize[@name="label"]<ParticipantName, "label"> ":" LabelText lineEnd
     }
@@ -33,9 +37,11 @@ messageLine {
 
     "participant"
     "label"
+    "title"
 
     ParticipantName {
         std.asciiLetter (std.asciiLetter | std.digit)*
     }
     LabelText { ![\n]+ }
+    TitleText { ![\n]+ }
 }

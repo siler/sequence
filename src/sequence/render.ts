@@ -49,6 +49,10 @@ export const render = (
       graphics.rect(0, 0, bottomRight.x, bottomRight.y).fill();
    });
 
+   if (diagram.title) {
+      drawTitle(graphics, style, diagram.title, bottomRight.x);
+   }
+
    for (const lifeline of diagram.lifelines) {
       drawLifeline(lifeline, diagram.lifelineHeight, graphics, style.lifeline);
    }
@@ -58,6 +62,28 @@ export const render = (
    }
 
    graphics.restore();
+};
+
+const drawTitle = (
+   graphics: Graphics,
+   style: Style,
+   text: string,
+   width: number
+): void => {
+   withState(graphics, () => {
+      const { family, size, weight, style: ztyle } = style.title.font;
+      graphics.setFont(family, size, weight, ztyle);
+      graphics.textAlign('center');
+      graphics.fillStyle('#000');
+
+      const x = width / 2;
+      const y =
+         style.frame.padding.top +
+         style.title.padding.top +
+         style.title.font.size;
+
+      graphics.fillText(text, x, y);
+   });
 };
 
 const drawLifeline = (

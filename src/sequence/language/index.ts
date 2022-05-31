@@ -13,9 +13,8 @@ const parserWithMetadata = parser.configure({
       styleTags({
          Comment: t.comment,
          ParticipantName: t.atom,
-         LabelText: t.string,
-
-         'participant label': t.keyword,
+         'LabelText TitleText': t.string,
+         'participant label title': t.keyword,
          '->': t.operator,
       }),
    ],
@@ -27,6 +26,7 @@ const seqLanguage = LRLanguage.define({
 
 const seqCompletion = seqLanguage.data.of({
    autocomplete: completeFromList([
+      { label: 'title', type: 'keyword' },
       { label: 'participant', type: 'keyword' },
       { label: 'label', type: 'keyword' },
    ]),

@@ -2,8 +2,14 @@ import { Extent } from './layout';
 
 export interface Style {
    readonly frame: FrameStyle;
+   readonly title: TitleStyle;
    readonly lifeline: LifelineStyle;
    readonly signal: SignalStyle;
+}
+
+export interface TitleStyle {
+   readonly padding: Padding;
+   readonly font: Font;
 }
 
 export interface FrameStyle {
@@ -70,6 +76,10 @@ export const defaultStyle = (): Style => {
    return {
       frame: {
          padding: padAll(25),
+      },
+      title: {
+         padding: padAll(25),
+         font: newFont('Helvetica', 36),
       },
       lifeline: {
          padding: padAll(10),
