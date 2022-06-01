@@ -34,8 +34,6 @@ export const Editor = ({ dispatch, text }: EditorProps) => {
    const editorState = useMemo(() => {
       const languageConf = new Compartment();
 
-      console.log('creating editor state');
-
       return EditorState.create({
          doc: text,
          extensions: [
@@ -61,15 +59,12 @@ export const Editor = ({ dispatch, text }: EditorProps) => {
    }, [notifier]);
 
    // then set up the view
-   const parent = useRef(null);
+   const parent = useRef<HTMLDivElement | null>(null);
 
    useEffect(() => {
       if (!parent.current) {
-         console.log('no parent, leaving early');
          return;
       }
-
-      console.log('initializing view state');
 
       const view = new EditorView({
          state: editorState,
@@ -77,7 +72,6 @@ export const Editor = ({ dispatch, text }: EditorProps) => {
       });
 
       return () => {
-         console.log('destroying view state');
          view.destroy();
       };
    }, [editorState, parent]);

@@ -55,7 +55,7 @@ export const CopyEditLink: React.FC<CopyEditLinkProps> = ({ code, open }) => {
    return (
       <CopyToClipboard
          onCopy={debouncedShowCopied}
-         text={`http://127.0.0.1:3000/edit/?d=${encoded}`}
+         text={`http://127.0.0.1:3000/edit/?diagram=${encoded}`}
       >
          <div
             tabIndex={-1}

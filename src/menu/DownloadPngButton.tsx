@@ -1,12 +1,29 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+
+const makeSafeFilename = (str: string): string => {
+   return str.replace(/[/|\\:*?"<>]/g, '_');
+};
 
 export interface DownloadPngProps {
    canvas: HTMLCanvasElement | null;
    open: boolean;
+   title?: string;
 }
 
-export const DownloadPng: React.FC<DownloadPngProps> = ({ canvas, open }) => {
+export const DownloadPng: React.FC<DownloadPngProps> = ({
+   canvas,
+   open,
+   title,
+}) => {
    const [url, setUrl] = useState('');
+
+   const filename = useMemo(() => {
+      if (!title) {
+         return 'sequenceDiagram.png';
+      }
+
+      return `${makeSafeFilename(title)}.png`;
+   }, [title]);
 
    useEffect(() => {
       if (!canvas || !open) {
@@ -21,8 +38,9 @@ export const DownloadPng: React.FC<DownloadPngProps> = ({ canvas, open }) => {
 
       setUrl(octetStream);
    }, [canvas, url, open]);
+
    return (
-      <a download="diagram.png" href={url}>
+      <a download={filename} href={url}>
          <div className="btn btn-indigo mt-4 flex justify-center items-center">
             Download .png
          </div>

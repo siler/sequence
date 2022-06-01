@@ -21,7 +21,7 @@ export const Workspace = ({
    dispatch,
    text,
    diagram,
-   canvas,
+   canvas: canvas,
 }: WorkspaceProps) => {
    useEffect(() => {
       if (canvas.current) {

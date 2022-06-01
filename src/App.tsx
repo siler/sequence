@@ -4,15 +4,23 @@ import { Workspace } from './workspace';
 import { reducer, initializer, initialState } from './state';
 import { setCachedDiagram } from './store';
 import { useSearchParams } from 'react-router-dom';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import './App.css';
 
 export const App = () => {
+   const decodeFailed = useRef(false);
+
    const [params] = useSearchParams();
-   console.log(JSON.stringify(params));
    const [state, dispatch] = useReducer(
       reducer,
       initialState,
-      initializer(params.get('d') || undefined)
+      initializer(
+         () => (decodeFailed.current = true),
+         params.get('diagram') || undefined
+      )
    );
+
    const canvas = useRef<HTMLCanvasElement | null>(null);
 
    useEffect(() => {
@@ -21,6 +29,13 @@ export const App = () => {
       }
    }, [state.code]);
 
+   useEffect(() => {
+      if (decodeFailed.current) {
+         decodeFailed.current = false;
+         toast.error('Failed to decode diagram from URL.');
+      }
+   }, [decodeFailed]);
+
    return (
       <div className="h-screen bg-gray-300 p-2">
          <Menu
@@ -28,6 +43,7 @@ export const App = () => {
             canvas={canvas.current}
             open={state.menuOpen}
             code={state.code}
+            title={state.diagram.title}
          />
          <MenuButton dispatch={dispatch} open={state.menuOpen} />
          <Workspace
@@ -35,6 +51,17 @@ export const App = () => {
             text={state.code}
             diagram={state.diagram}
             canvas={canvas}
+         />
+         <ToastContainer
+            position="bottom-center"
+            autoClose={5000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick={true}
+            rtl={false}
+            pauseOnFocusLoss={false}
+            draggable={false}
+            pauseOnHover={true}
          />
       </div>
    );

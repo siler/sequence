@@ -2,7 +2,7 @@ export { reducer } from './reducer';
 import type { dispatchFn } from './reducer';
 export type { dispatchFn };
 
-export { setCode, setMenuOpen, setUrlEncode, setDiagram } from './actions';
+export { setCode, setMenuOpen, setDiagram } from './actions';
 import type { Action } from './actions';
 export type { Action };
 
