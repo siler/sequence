@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useRef } from 'react';
+import { useEffect, useReducer, useRef, useState } from 'react';
 import { Menu, MenuButton } from './menu';
 import { Workspace } from './workspace';
 import { reducer, initializer, initialState } from './state';
@@ -9,14 +9,14 @@ import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
 
 export const App = () => {
-   const decodeFailed = useRef(false);
+   const [decodeFailed, setDecodeFailed] = useState(false);
 
    const [params] = useSearchParams();
    const [state, dispatch] = useReducer(
       reducer,
       initialState,
       initializer(
-         () => (decodeFailed.current = true),
+         () => setDecodeFailed(true),
          params.get('diagram') || undefined
       )
    );
@@ -30,8 +30,8 @@ export const App = () => {
    }, [state.code]);
 
    useEffect(() => {
-      if (decodeFailed.current) {
-         decodeFailed.current = false;
+      if (decodeFailed) {
+         setDecodeFailed(false);
          toast.error('Failed to decode diagram from URL.');
       }
    }, [decodeFailed]);
