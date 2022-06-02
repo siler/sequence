@@ -1,23 +1,30 @@
-import { newBrowserCanvas } from './graphics/browserCanvas';
-import { parseDiagram, ParsedDiagram } from './language/parser';
-import { Extent, layout } from './layout';
-import { render } from './render';
-import { defaultStyle } from './style';
+import {
+   parseDiagram,
+   ParsedDiagram,
+   Extent,
+   layout,
+   render,
+   defaultStyle,
+} from '@siler/realize-sequence';
+import { newCanvas } from './canvas';
+import { fromHtmlCanvas } from './measurer';
 
 export const draw = (
    code: string,
    canvas: HTMLCanvasElement,
    scale: number
 ) => {
-   const graphics = newBrowserCanvas(canvas);
+   const graphics = newCanvas(canvas);
 
    const result = parseDiagram(code);
    if (result.type === 'failure') {
       return;
    }
 
+
+   const measurer = fromHtmlCanvas(canvas);
    const style = defaultStyle();
-   const diagram = layout(result.diagram, canvas, style);
+   const diagram = layout(result.diagram, measurer, style);
    fitCanvasSize(canvas, diagram.size, scale);
    render(graphics, diagram, style, scale);
 };
@@ -27,9 +34,10 @@ export const drawDiagram = (
    canvas: HTMLCanvasElement,
    scale: number
 ) => {
-   const graphics = newBrowserCanvas(canvas);
+   const graphics = newCanvas(canvas);
+   const measurer = fromHtmlCanvas(canvas);
    const style = defaultStyle();
-   const laidOutDiagram = layout(diagram, canvas, style);
+   const laidOutDiagram = layout(diagram, measurer, style);
    fitCanvasSize(canvas, laidOutDiagram.size, scale);
    render(graphics, laidOutDiagram, style, scale);
 };

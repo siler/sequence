@@ -19,7 +19,7 @@ export const Menu: React.FC<MenuProps> = ({
    title,
 }) => {
    const always =
-      'fixed top-2 right-2 transition bg-indigo-500 text-white flex flex-col p-4 shadow shadow-black/50 focus:ring-0 focus:ring-offset-0 focus:outline-none';
+      'fixed top-2 right-2 transition bg-indigo-500 text-white flex flex-col p-4 shadow shadow-black/50 rounded-bl-xl focus:ring-0 focus:ring-offset-0 focus:outline-none';
    const whenOpen = 'translate-x-0 ';
    const whenClosed = 'translate-x-48';
 
@@ -48,7 +48,7 @@ export const Menu: React.FC<MenuProps> = ({
             dispatch(setMenuOpen(false));
          }}
       >
-         <h1 className="self-center text-2xl border-b-2 border-white">Menu</h1>
+         <h1 className="self-center text-2xl">Menu</h1>
          <DownloadPng canvas={canvas} open={open} title={title} />
          <CopyEditLink code={code} open={open} />
       </div>

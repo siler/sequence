@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import Split from 'react-split';
 import { Editor } from './Editor';
-import { drawDiagram, ParsedDiagram } from '../sequence';
+import { ParsedDiagram } from '@siler/realize-sequence';
+import { drawDiagram } from '../diagram';
 import { dispatchFn } from '../state';
 import './Workspace.css';
 
@@ -21,7 +22,7 @@ export const Workspace = ({
    dispatch,
    text,
    diagram,
-   canvas: canvas,
+   canvas,
 }: WorkspaceProps) => {
    useEffect(() => {
       if (canvas.current) {

@@ -1,4 +1,4 @@
-import { ParsedDiagram } from '../sequence';
+import { ParsedDiagram } from '@siler/realize-sequence';
 
 export type Action = SetMenuOpen | SetCode | SetDiagram;
 

@@ -1,0 +1,18 @@
+{
+   "compilerOptions": {
+      "target": "es6",
+      "lib": ["ESNext"],
+      "strict": true,
+      "skipLibCheck": true,
+      "forceConsistentCasingInFileNames": true,
+      "noFallthroughCasesInSwitch": true,
+      "module": "CommonJS",
+      "moduleResolution": "node",
+      "isolatedModules": true,
+
+      "declaration": true,
+      "outDir": "./dist"
+   },
+   "include": ["src"],
+   "exclude": ["**/*test.ts"]
+}

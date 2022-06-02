@@ -1,4 +1,4 @@
-import { MessageProperties } from './language/parser';
+import { MessageProperties } from './parser';
 import { Box, Extent } from './layout';
 
 export type Direction = 'ltr' | 'rtl' | 'none';

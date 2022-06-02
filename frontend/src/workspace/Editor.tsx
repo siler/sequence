@@ -10,9 +10,9 @@ import { basicSetup } from '@codemirror/basic-setup';
 import { indentWithTab } from '@codemirror/commands';
 import { useEffect, useMemo, useRef } from 'react';
 import { debounce } from '../debounce';
-import { sequence } from '../sequence';
+import { sequence } from '../syntax';
 import { dispatchFn, setCode, setDiagram } from '../state';
-import { ParsedDiagram } from '../sequence';
+import { ParsedDiagram } from '@siler/realize-sequence';
 import './Editor.css';
 
 export type OnEditorUpdate = { (content: string): void };

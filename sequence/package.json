@@ -1,0 +1,13 @@
+{
+   "name": "@sriler/sequence",
+   "version": "0.1.0",
+   "private": true,
+   "main": "dist/index.js",
+   "scripts": {
+      "build": "npx tsc",
+      "test": "jest"
+   },
+   "devDependencies": {
+      "ts-jest": "^28.0.3"
+   }
+}

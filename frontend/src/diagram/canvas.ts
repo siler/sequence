@@ -1,49 +1,16 @@
-import { Vector } from '.';
-import { Graphics } from '.';
-// import { Vec } from './vector'
+import {
+   Point,
+   Graphics,
+   Extent,
+   Font,
+   FontStyle,
+   FontWeight,
+} from '@siler/realize-sequence';
 
-// interface ICanvasGraphics extends Graphics {
-//   mousePos(): Vec
-// }
-
-// type Callbacks = {
-//   mousedown(p: Vec): void
-//   mouseup(p: Vec): void
-//   mousemove(p: Vec): void
-// }
-
-export const newBrowserCanvas = (
-   canvas: HTMLCanvasElement
-   // callbacks?: Callbacks
-): Graphics => {
+export const newCanvas = (canvas: HTMLCanvasElement): Graphics => {
    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
    const ctx = canvas.getContext('2d')!;
    const twopi = 2 * 3.1416;
-
-   // let mousePos = { x: 0, y: 0 };
-
-   // mouseEventToPos(event: MouseEvent) => {
-   //     var e = canvas;
-   //     return {
-   //         x: event.clientX - e.getBoundingClientRect().left - e.clientLeft + e.scrollLeft,
-   //         y: event.clientY - e.getBoundingClientRect().top - e.clientTop + e.scrollTop,
-   //     };
-   // };
-
-   // if (callbacks) {
-   //     canvas.addEventListener('mousedown', (event) => {
-   //         if (callbacks.mousedown) callbacks.mousedown(mouseEventToPos(event))
-   //     })
-
-   //     canvas.addEventListener('mouseup', (event) => {
-   //         if (callbacks.mouseup) callbacks.mouseup(mouseEventToPos(event))
-   //     })
-
-   //     canvas.addEventListener('mousemove', (event) => {
-   //         mousePos = mouseEventToPos(event)
-   //         if (callbacks.mousemove) callbacks.mousemove(mouseEventToPos(event))
-   //     })
-   // }
 
    const chainable = {
       stroke: () => {
@@ -63,7 +30,7 @@ export const newBrowserCanvas = (
       },
    };
 
-   const tracePath = (path: Vector[], inOffset?: Vector, inScale?: number) => {
+   const tracePath = (path: Point[], inOffset?: Point, inScale?: number) => {
       const scale = inScale || 1;
       const offset = inOffset || { x: 0, y: 0 };
 
@@ -79,6 +46,20 @@ export const newBrowserCanvas = (
       ctx.restore();
 
       return chainable;
+   };
+
+   const setFont = (
+      family: string,
+      sizePt: number,
+      weight: FontWeight,
+      style: FontStyle
+   ) => {
+      ctx.font = `${weight} ${style} ${sizePt}pt ${family}, Helvetica, sans-serif`;
+   };
+
+   const textExtent = (text: string) => {
+      const { width, actualBoundingBoxAscent: height } = ctx.measureText(text);
+      return { width, height };
    };
 
    return {
@@ -169,13 +150,19 @@ export const newBrowserCanvas = (
          ctx.lineWidth = width;
       },
 
-      measureText: (text) => {
-         return ctx.measureText(text);
+      measurer: () => {
+         return {
+            measure: (text: string, font: Font): Extent => {
+               ctx.save();
+               setFont(font.family, font.size, font.weight, font.style);
+               const extent = textExtent(text);
+               ctx.restore();
+               return extent;
+            },
+         };
       },
 
-      // mousePos: () => {
-      //     return mousePos
-      // },
+      measureText: (text) => textExtent(text),
 
       moveTo: (x, y) => {
          ctx.moveTo(x, y);
@@ -240,9 +227,7 @@ export const newBrowserCanvas = (
       // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
       setData: (_name: string, _value: string) => {},
 
-      setFont: (family, sizePt, weight, style) => {
-         ctx.font = `${weight} ${style} ${sizePt}pt ${family}, Helvetica, sans-serif`;
-      },
+      setFont: setFont,
 
       setLineDash: (segments: number[]) => {
          ctx.setLineDash(segments);

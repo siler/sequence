@@ -1,83 +1,29 @@
 {
-   "name": "realize",
-   "version": "0.1.0",
-   "private": true,
-   "dependencies": {
-      "@codemirror/autocomplete": "^0.20.2",
-      "@codemirror/basic-setup": "^0.20.0",
-      "@codemirror/commands": "^0.20.0",
-      "@codemirror/language": "^0.20.2",
-      "@codemirror/lint": "^0.20.3",
-      "@codemirror/state": "^0.20.0",
-      "@codemirror/view": "^0.20.6",
-      "@heroicons/react": "^1.0.6",
-      "@lezer/highlight": "^0.16.0",
-      "@lezer/lr": "^0.16.3",
-      "@tradle/urlsafe-base64": "^1.0.0",
-      "fflate": "^0.7.3",
-      "immer": "^9.0.14",
-      "react": "^18.1.0",
-      "react-copy-to-clipboard": "^5.1.0",
-      "react-dom": "^18.1.0",
-      "react-router-dom": "^6.3.0",
-      "react-scripts": "5.0.1",
-      "react-split": "^2.0.14",
-      "react-toastify": "^9.0.2",
-      "typescript": "^4.7.2",
-      "web-vitals": "^2.1.4"
-   },
-   "scripts": {
-      "start": "react-scripts start",
-      "build": "react-scripts build",
-      "test": "react-scripts test",
-      "eject": "react-scripts eject",
-      "fmt": "prettier --write src/**/*.ts src/**/*.tsx package.json postcss.config.js tailwind.config.js tsconfig.json .prettierrc"
-   },
-   "eslintConfig": {
-      "extends": [
-         "react-app",
-         "react-app/jest"
-      ]
-   },
-   "browserslist": {
-      "production": [
-         ">0.2%",
-         "not dead",
-         "not op_mini all"
-      ],
-      "development": [
-         "last 1 chrome version",
-         "last 1 firefox version",
-         "last 1 safari version"
-      ]
-   },
+   "name": "@sriler/realize",
+   "workspaces": [
+      "frontend",
+      "sequence"
+   ],
    "devDependencies": {
-      "@lezer/generator": "^0.16.0",
-      "@svgr/webpack": "^6.2.1",
-      "@tailwindcss/forms": "^0.5.2",
-      "@testing-library/jest-dom": "^5.16.4",
-      "@testing-library/react": "^13.2.0",
-      "@testing-library/user-event": "^14.2.0",
-      "@types/codemirror": "^5.60.5",
-      "@types/jest": "^27.5.1",
-      "@types/jsonpack": "^1.1.1",
-      "@types/node": "^17.0.35",
-      "@types/react": "^18.0.9",
-      "@types/react-copy-to-clipboard": "^5.0.2",
-      "@types/react-dom": "^18.0.5",
-      "@types/react-router-dom": "^5.3.3",
+      "@types/jest": "^28.1.0",
       "@typescript-eslint/eslint-plugin": "^5.26.0",
       "@typescript-eslint/parser": "^5.26.0",
-      "autoprefixer": "^10.4.7",
-      "canvas": "^2.9.1",
       "eslint": "^8.16.0",
       "eslint-config-prettier": "^8.5.0",
-      "eslint-plugin-react": "^7.30.0",
-      "postcss": "^8.4.14",
+      "jest": "^28.1.0",
       "prettier": "2.6.2",
-      "tailwindcss": "^3.0.24"
+      "typescript": "^4.7.2"
    },
-   "overrides": {
-      "@svgr/webpack": "$@svgr/webpack"
+   "scripts": {
+      "generate": "npm -w frontend run generate",
+      "build": "npm -w sequence run build && npm -w frontend run build",
+      "test": "npm -w sequence run test && npm -w frontend run test",
+      "release": "npm run generate && npm run build && npm run test",
+      "sequence:build": "npm -w sequence run build",
+      "sequence:test": "npm -w sequence run test",
+      "frontend:generate": "npm -w frontend run generate",
+      "frontend:build": "npm -w frontend run build",
+      "frontend:test": "npm -w frontend run test",
+      "frontend:start": "npm -w frontend run start"
    }
 }

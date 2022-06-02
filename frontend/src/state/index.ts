@@ -1,11 +1,12 @@
-export { reducer } from './reducer';
 import type { dispatchFn } from './reducer';
+import type { Action } from './actions';
+import type { State } from './state';
+
+export { reducer } from './reducer';
 export type { dispatchFn };
 
 export { setCode, setMenuOpen, setDiagram } from './actions';
-import type { Action } from './actions';
 export type { Action };
 
 export { initialState, initializer } from './state';
-import type { State } from './state';
 export type { State };

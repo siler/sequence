@@ -1,21 +1,18 @@
-export interface Vector {
-   readonly x: number;
-   readonly y: number;
-}
+import { Extent, Measurer, Point } from './layout';
 
 /**
  * - butt: line squared off at endpoint (default)
  * - round: line ends are rounded
  * - square: line ends are extended half the thickness and squared off
  */
-type LineCap = 'butt' | 'round' | 'square';
+export type LineCap = 'butt' | 'round' | 'square';
 
 /**
  * - bevel: creates a flat outside edge connecting the two outside line edges
  * - round: creates a round arc between the two outside line edges
  * - miter: creates a sharp point by continuing the two outside line edges
  */
-type LineJoin = 'bevel' | 'round' | 'miter';
+export type LineJoin = 'bevel' | 'round' | 'miter';
 
 /**
  * draw the current path
@@ -57,12 +54,12 @@ export interface Graphics {
    /**
     * set path to a circle with the provided center and radius
     */
-   circle(center: Vector, radius: number): Chainable;
+   circle(center: Point, radius: number): Chainable;
 
    /**
     * set path to a closed path as a list of line segments
     */
-   circuit(path: Vector[], offset?: Vector, s?: number): Chainable;
+   circuit(path: Point[], offset?: Point, s?: number): Chainable;
 
    /**
     * clear the draw area
@@ -79,7 +76,7 @@ export interface Graphics {
     * set path to an elipse with the provided center, width, and height
     */
    ellipse(
-      center: Vector,
+      center: Point,
       width: number,
       height: number,
       start?: number,
@@ -141,7 +138,12 @@ export interface Graphics {
    /**
     * retrieve rendered size information about the provided text
     */
-   measureText(text: string): TextMetrics;
+   measurer(): Measurer;
+
+   /**
+    * retrieve rendered size information about the provided text
+    */
+   measureText(text: string): Extent;
 
    /**
     * begin a new sub-path at (x, y)
@@ -151,7 +153,7 @@ export interface Graphics {
    /**
     * set path to the provided points as a sequence of straight lines
     */
-   path(points: Vector[]): Chainable;
+   path(points: Point[]): Chainable;
 
    /**
     * set path to a rectangle at (x, y) with the provided width and height

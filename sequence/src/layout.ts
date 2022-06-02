@@ -1,4 +1,4 @@
-import { Message, ParsedDiagram, Participant } from './language/parser';
+import { Message, ParsedDiagram, Participant } from './parser';
 import { Lifeline, Diagram, Signal, Direction } from './model';
 import {
    LifelineStyle,
@@ -7,8 +7,18 @@ import {
    Style,
    horizontal,
    vertical,
+   Font,
 } from './style';
-import { fromHtmlCanvas as newMeasurer, Measurer } from './measurer';
+
+/**
+ * an object which can measure the extent of text (above baseline)
+ */
+export interface Measurer {
+   /**
+    * retrieve rendered size information about the provided text
+    */
+   measure(text: string, font: Font): Extent;
+}
 
 export interface Point {
    readonly x: number;
@@ -76,10 +86,9 @@ const findTopLeft = (style: Style, title?: string): Point => {
 
 export const layout = (
    parsed: ParsedDiagram,
-   canvas: HTMLCanvasElement,
+   measurer: Measurer,
    style: Style
 ): Diagram => {
-   const measurer = newMeasurer(canvas);
    const topLeft = findTopLeft(style, parsed.title);
 
    const lifelines = layoutLifelines(
@@ -143,7 +152,7 @@ const layoutLifelines = (
    let nextLeft = topLeft.x;
 
    const extents = participants.map((participant) =>
-      measurer.ascentExtent(participant.name, style.font)
+      measurer.measure(participant.name, style.font)
    );
 
    return participants.map((participant, idx) => {
@@ -219,7 +228,7 @@ const updateSegmentsForMessage = ({
    const span = messageSpan(segments, message);
 
    if (message.label) {
-      const textWidth = measurer.ascentExtent(message.label, style.font).width;
+      const textWidth = measurer.measure(message.label, style.font).width;
       const signalWidth =
          textWidth + horizontal(style.padding) + horizontal(style.margin);
 
