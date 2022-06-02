@@ -1,3 +1,6 @@
+import type { Error, Failure } from './combi';
+export type { Error, Failure };
+
 import type { ParsedDiagram } from './parser';
 export type { ParsedDiagram };
 export { parseDiagram, newEmptyDiagram } from './parser';

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import Split from 'react-split';
 import { Editor } from './Editor';
-import { ParsedDiagram } from '@siler/realize-sequence';
+import { ParsedDiagram } from '@sriler/sequence';
 import { drawDiagram } from '../diagram';
 import { dispatchFn } from '../state';
 import './Workspace.css';

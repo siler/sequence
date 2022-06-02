@@ -2,29 +2,19 @@ import {
    ClipboardCheckIcon,
    ClipboardCopyIcon,
 } from '@heroicons/react/outline';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import CopyToClipboard from 'react-copy-to-clipboard';
-import { encode } from '../urlCode';
 
-export interface CopyEditLinkProps {
-   code: string;
-   open: boolean;
+export interface CopyButtonProps {
+   name: string;
+   data: string;
 }
 
-export const CopyEditLink: React.FC<CopyEditLinkProps> = ({ code, open }) => {
-   const [encoded, setEncoded] = useState('');
+export const CopyButton: React.FC<CopyButtonProps> = ({ name, data }) => {
    const [showCopied, setShowCopied] = useState(false);
    const [lastTimeout, setLastTimeout] = useState<number | undefined>(
       undefined
    );
-
-   useEffect(() => {
-      if (!open) {
-         return;
-      }
-
-      setEncoded(encode(code));
-   }, [code, open]);
 
    const clipboard = useMemo(() => {
       if (showCopied) {
@@ -53,15 +43,12 @@ export const CopyEditLink: React.FC<CopyEditLinkProps> = ({ code, open }) => {
    };
 
    return (
-      <CopyToClipboard
-         onCopy={debouncedShowCopied}
-         text={`http://127.0.0.1:3000/edit/?diagram=${encoded}`}
-      >
+      <CopyToClipboard onCopy={debouncedShowCopied} text={data}>
          <div
             tabIndex={-1}
             className="btn btn-indigo mt-4 flex flex-row justify-between items-center"
          >
-            <span>Edit link</span>
+            <span>{name}</span>
             {clipboard}
          </div>
       </CopyToClipboard>

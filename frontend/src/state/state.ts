@@ -1,4 +1,4 @@
-import { newEmptyDiagram, ParsedDiagram } from '@siler/realize-sequence';
+import { newEmptyDiagram, ParsedDiagram } from '@sriler/sequence';
 import { getCachedDiagram } from '../store';
 import { decode } from '../urlCode';
 

@@ -1,1 +1,1 @@
-export {drawDiagram} from './draw';
+export { draw as drawDiagram } from './draw';

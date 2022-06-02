@@ -1,6 +1,7 @@
-import React, { FocusEvent, useEffect, useRef } from 'react';
+import React, { FocusEvent, useEffect, useRef, useState } from 'react';
 import { dispatchFn, setMenuOpen } from '../state';
-import { CopyEditLink } from './CopyEditLinkButton';
+import { encode } from '../urlCode';
+import { CopyButton } from './CopyButton';
 import { DownloadPng } from './DownloadPngButton';
 
 interface MenuProps {
@@ -27,6 +28,7 @@ export const Menu: React.FC<MenuProps> = ({
       ? [always, whenOpen].join(' ')
       : [always, whenClosed].join(' ');
 
+   const [encoded, setEncoded] = useState('');
    const menu = useRef<HTMLDivElement | null>(null);
 
    useEffect(() => {
@@ -34,6 +36,14 @@ export const Menu: React.FC<MenuProps> = ({
          menu.current.focus();
       }
    }, [open, menu]);
+
+   useEffect(() => {
+      if (!open) {
+         return;
+      }
+
+      setEncoded(encode(code));
+   }, [code, open]);
 
    return (
       <div
@@ -50,7 +60,14 @@ export const Menu: React.FC<MenuProps> = ({
       >
          <h1 className="self-center text-2xl">Menu</h1>
          <DownloadPng canvas={canvas} open={open} title={title} />
-         <CopyEditLink code={code} open={open} />
+         <CopyButton
+            name="Edit link"
+            data={`http://127.0.0.1:3000/edit/?diagram=${encoded}`}
+         />
+         <CopyButton
+            name="PNG link"
+            data={`http://127.0.0.1:3000/render/?diagram=${encoded}`}
+         />
       </div>
    );
 };

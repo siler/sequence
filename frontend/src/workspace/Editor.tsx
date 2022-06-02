@@ -12,7 +12,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { debounce } from '../debounce';
 import { sequence } from '../syntax';
 import { dispatchFn, setCode, setDiagram } from '../state';
-import { ParsedDiagram } from '@siler/realize-sequence';
+import { ParsedDiagram } from '@sriler/sequence';
 import './Editor.css';
 
 export type OnEditorUpdate = { (content: string): void };

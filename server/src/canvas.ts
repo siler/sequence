@@ -1,3 +1,4 @@
+import { Canvas } from 'canvas';
 import {
    Point,
    Graphics,
@@ -7,7 +8,7 @@ import {
    FontWeight,
 } from '@sriler/sequence';
 
-export const newCanvas = (canvas: HTMLCanvasElement): Graphics => {
+export const newCanvas = (canvas: Canvas): Graphics => {
    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
    const ctx = canvas.getContext('2d')!;
    const twopi = 2 * 3.1416;

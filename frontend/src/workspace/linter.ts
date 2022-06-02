@@ -1,7 +1,6 @@
 import { Diagnostic, linter, LintSource } from '@codemirror/lint';
 import { EditorView } from '@codemirror/view';
-import { Error, Failure } from '@siler/realize-sequence/src/combi';
-import { parseDiagram, ParsedDiagram } from '@siler/realize-sequence';
+import { parseDiagram, ParsedDiagram, Error, Failure } from '@sriler/sequence';
 
 export type OnParse = { (content: ParsedDiagram): void };
 export type OnError = { (error: Error | Failure): void };
