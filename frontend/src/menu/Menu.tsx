@@ -38,11 +38,9 @@ export const Menu: React.FC<MenuProps> = ({
    }, [open, menu]);
 
    useEffect(() => {
-      if (!open) {
-         return;
+      if (open) {
+         setEncoded(encode(code));
       }
-
-      setEncoded(encode(code));
    }, [code, open]);
 
    return (
@@ -51,22 +49,20 @@ export const Menu: React.FC<MenuProps> = ({
          className={classes}
          tabIndex={-1}
          onBlur={(event: FocusEvent) => {
-            if (menu.current?.contains(event.relatedTarget as HTMLElement)) {
-               return;
+            if (!menu.current?.contains(event.relatedTarget as HTMLElement)) {
+               dispatch(setMenuOpen(false));
             }
-
-            dispatch(setMenuOpen(false));
          }}
       >
          <h1 className="self-center text-2xl">Menu</h1>
          <DownloadPng canvas={canvas} open={open} title={title} />
          <CopyButton
             name="Edit link"
-            data={`http://127.0.0.1:3000/edit/?diagram=${encoded}`}
+            data={`http://${window.location.host}/edit/${encoded}`}
          />
          <CopyButton
             name="PNG link"
-            data={`http://127.0.0.1:3000/render/?diagram=${encoded}`}
+            data={`http://${window.location.host}/render/${encoded}`}
          />
       </div>
    );

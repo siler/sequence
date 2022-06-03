@@ -30,14 +30,14 @@ export const DownloadPng: React.FC<DownloadPngProps> = ({
          return;
       }
 
-      const image = canvas.toDataURL('image/png', 10);
+      const image = canvas.toDataURL('image/png', 9);
       const octetStream = image.replace(
-         /^data:image\/png;/,
-         'data:application/octet-stream;'
+         /^data:image\/png/,
+         'data:application/octet-stream'
       );
 
       setUrl(octetStream);
-   }, [canvas, url, open]);
+   }, [canvas, setUrl, open]);
 
    return (
       <a download={filename} href={url}>

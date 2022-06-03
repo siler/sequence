@@ -8,7 +8,7 @@ import {
    FontWeight,
 } from '@sriler/sequence';
 
-export const newCanvas = (canvas: Canvas): Graphics => {
+export const newGraphics = (canvas: Canvas): Graphics => {
    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
    const ctx = canvas.getContext('2d')!;
    const twopi = 2 * 3.1416;

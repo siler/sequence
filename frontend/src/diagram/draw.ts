@@ -5,14 +5,14 @@ import {
    render,
    defaultStyle,
 } from '@sriler/sequence';
-import { newCanvas } from './canvas';
+import { newGraphics } from './graphics';
 
 export const draw = (
    diagram: ParsedDiagram,
    canvas: HTMLCanvasElement,
    scale: number
 ) => {
-   const graphics = newCanvas(canvas);
+   const graphics = newGraphics(canvas);
    const measurer = graphics.measurer();
    const style = defaultStyle();
    const laidOutDiagram = layout(diagram, measurer, style);

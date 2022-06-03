@@ -1,0 +1,30 @@
+# get help
+default:
+    just --list
+
+# remove build data
+clean:
+    rm -rf ./dist
+
+# clean and remove node_modules
+purge: clean
+    rm -rf ./node_modules
+
+# format everything
+fmt:
+    npx prettier --write src/**/*.ts package.json tsconfig.json jest.config.js
+
+# execute tests
+test:
+    npx jest --passWithNoTests
+
+# build the server
+build:
+    npx tsc
+
+# issue a quality new build of the server
+release: clean fmt test build 
+
+# start the server
+start:
+    node dist/app.js

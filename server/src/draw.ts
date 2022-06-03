@@ -5,11 +5,11 @@ import {
    defaultStyle,
    Extent,
 } from '@sriler/sequence';
-import { newCanvas } from './canvas';
+import { newGraphics } from './graphics';
 import { Canvas } from 'canvas';
 
 export const draw = (code: string, canvas: Canvas, scale: number) => {
-   const graphics = newCanvas(canvas);
+   const graphics = newGraphics(canvas);
 
    const result = parseDiagram(code);
    if (result.type === 'failure') {

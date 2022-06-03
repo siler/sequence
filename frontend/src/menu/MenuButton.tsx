@@ -8,7 +8,7 @@ export interface MenuButtonProps {
 
 export const MenuButton = ({ dispatch, open }: MenuButtonProps) => {
    const always =
-      'fixed top-0 right-0 w-10 h-10 rounded-full bg-indigo-500 text-white hover:opacity-100 hover:scale-125 transition cursor-pointer select-none flex justify-center items-center p-2 m-4';
+      'fixed top-0 right-0 w-10 h-10 rounded-full shadow shadow-black/50 bg-indigo-500 text-white hover:opacity-100 hover:scale-125 transition cursor-pointer select-none flex justify-center items-center p-2 m-4';
    const whenOpen = 'opacity-0 translate-x-16';
    const whenClosed = 'opacity-[.33] translate-x-0';
    const classes = open

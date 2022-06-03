@@ -3,7 +3,7 @@ import { Menu, MenuButton } from './menu';
 import { Workspace } from './workspace';
 import { reducer, initializer, initialState } from './state';
 import { setCachedDiagram } from './store';
-import { useSearchParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
@@ -11,14 +11,11 @@ import './App.css';
 export const App = () => {
    const [decodeFailed, setDecodeFailed] = useState(false);
 
-   const [params] = useSearchParams();
+   const { diagram } = useParams();
    const [state, dispatch] = useReducer(
       reducer,
       initialState,
-      initializer(
-         () => setDecodeFailed(true),
-         params.get('diagram') || undefined
-      )
+      initializer(() => setDecodeFailed(true), diagram)
    );
 
    const canvas = useRef<HTMLCanvasElement | null>(null);

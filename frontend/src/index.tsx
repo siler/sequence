@@ -15,7 +15,9 @@ root.render(
       <Routes>
          <Route path="/" element={<Shell />}>
             <Route index element={<Home />} />
-            <Route path="edit" element={<App />} />
+            <Route path="edit" element={<App />}>
+               <Route path=":diagram" element={<div />} />
+            </Route>
          </Route>
       </Routes>
    </BrowserRouter>

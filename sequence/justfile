@@ -1,0 +1,26 @@
+# get help
+default:
+    just --list
+
+# remove build data
+clean:
+    rm -rf ./dist
+
+# clean and remove node_modules
+purge: clean
+    rm -rf ./node_modules
+
+# format everything
+fmt:
+    npx prettier --write src/**/*.ts package.json tsconfig.json jest.config.js
+
+# execute tests
+test:
+    npx jest
+
+# build sequence
+build:
+    npx tsc
+
+# mint a fancy new build of sequence
+release: clean fmt test build 

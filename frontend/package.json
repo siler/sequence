@@ -2,6 +2,24 @@
    "name": "@sriler/realize-frontend",
    "version": "0.1.0",
    "private": true,
+   "eslintConfig": {
+      "extends": [
+         "react-app",
+         "react-app/jest"
+      ]
+   },
+   "browserslist": {
+      "production": [
+         ">0.2%",
+         "not dead",
+         "not op_mini all"
+      ],
+      "development": [
+         "last 1 chrome version",
+         "last 1 firefox version",
+         "last 1 safari version"
+      ]
+   },
    "dependencies": {
       "@codemirror/autocomplete": "^0.20.2",
       "@codemirror/basic-setup": "^0.20.0",
@@ -21,32 +39,6 @@
       "react-split": "^2.0.14",
       "react-toastify": "^9.0.2",
       "web-vitals": "^2.1.4"
-   },
-   "scripts": {
-      "start": "react-scripts start",
-      "generate": "npx lezer-generator --output src/syntax/gen/parser src/syntax/sequence.grammar",
-      "build": "react-scripts build",
-      "test": "react-scripts test --watchAll=false --passWithNoTests",
-      "eject": "react-scripts eject",
-      "fmt": "npx prettier --write src/**/*.ts src/**/*.tsx package.json postcss.config.js tailwind.config.js tsconfig.json"
-   },
-   "eslintConfig": {
-      "extends": [
-         "react-app",
-         "react-app/jest"
-      ]
-   },
-   "browserslist": {
-      "production": [
-         ">0.2%",
-         "not dead",
-         "not op_mini all"
-      ],
-      "development": [
-         "last 1 chrome version",
-         "last 1 firefox version",
-         "last 1 safari version"
-      ]
    },
    "devDependencies": {
       "@lezer/generator": "^0.16.0",

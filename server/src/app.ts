@@ -5,20 +5,15 @@ import logger = require('morgan');
 import path = require('path');
 
 import { process } from './process';
-import { PNGStream } from 'canvas';
 
 const app = express();
-const router = express.Router();
-const port = 3000;
+const render = express.Router();
+const port = 8080;
 const dist = path.join(__dirname, '..', '..', 'frontend', 'build');
 
-router.get('*', async (req, res, next) => {
-   const diagram = req.query['diagram'];
-   if (typeof diagram !== 'string') {
-      return next(createError(400, 'missing diagram'));
-   }
-
-   const result = await process(diagram);
+app.use(logger('dev'));
+app.get('/render/:diagram', async (req, res, next) => {
+   const result = await process(req.params.diagram);
    if (result.type === 'error') {
       return next(result.error);
    }
@@ -35,9 +30,6 @@ router.get('*', async (req, res, next) => {
    }
    res.end();
 });
-
-app.get('/render', router);
-app.use(logger('dev'));
 app.use(express.static(dist));
 app.get('*', (_, res) => res.sendFile(path.join(dist, 'index.html')));
 

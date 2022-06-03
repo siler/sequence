@@ -53,7 +53,7 @@ export interface ErrorContent {
 /**
  * indicates a failed parse attempt
  */
-export interface Error extends ErrorContent{
+export interface Error extends ErrorContent {
    readonly type: 'error';
    readonly cause?: Error;
 }

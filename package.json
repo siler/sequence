@@ -18,21 +18,7 @@
       "jest": "^27.0.0",
       "prettier": "2.6.2",
       "ts-jest": "^27.0.0",
+      "ts-node": "^10.8.0",
       "typescript": "^4.7.2"
-   },
-   "scripts": {
-      "sequence:build": "npm -w sequence run build",
-      "sequence:test": "npm -w sequence run test",
-      "frontend:generate": "npm -w frontend run generate",
-      "frontend:build": "npm -w frontend run build",
-      "frontend:test": "npm -w frontend run test",
-      "frontend:start": "npm -w frontend run start",
-      "server:build": "npm -w server run build",
-      "server:test": "npm -w server run test",
-      "server:start": "npm -w server run start",
-      "generate": "npm run frontend:generate",
-      "build": "npm run sequence:build && npm run frontend:build && npm run server:build",
-      "test": "npm run sequence:test && npm run frontend:test && npm run server:test",
-      "release": "npm run generate && npm run build && npm run test"
    }
 }

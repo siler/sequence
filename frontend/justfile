@@ -1,0 +1,38 @@
+# get help
+default:
+    just --list
+
+# clean up generated and build files
+clean:
+    rm -rf ./dist ./src/syntax/gen/*.js
+
+# clean and remove node_modules
+purge: clean
+    rm -rf ./node_modules
+
+# format everything
+fmt:
+    npx prettier --write src/**/*.ts package.json tsconfig.json postcss.config.js tailwind.config.js
+
+# generate the syntax parser
+generate:
+    npx lezer-generator --output src/syntax/gen/parser src/syntax/sequence.grammar
+
+# execute tests
+test:
+    npx react-scripts test --watchAll=false --passWithNoTests
+
+# create a production build
+build:
+    npx react-scripts build
+
+# create a freshly prepared build
+release: clean fmt generate test build 
+
+# start a frontend development server
+start:
+    npx react-scripts start
+
+# eject from Create React App
+eject:
+    npx react-scripts eject
