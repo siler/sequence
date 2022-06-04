@@ -1,50 +1,37 @@
-import { Response } from 'express';
-import createError = require('http-errors');
 import express = require('express');
 import logger = require('morgan');
 import path = require('path');
+import cors = require('cors');
 
-import { process } from './process';
+import { handleRender } from './render';
+import { errorHandler } from './error';
+import helmet from 'helmet';
+import { handleHealth } from './health';
 
-const app = express();
-const render = express.Router();
-const port = 8080;
+const port = process.env.REACT_APP_PORT || 3000;
 const dist = path.join(__dirname, '..', '..', 'frontend', 'build');
 
-app.use(logger('dev'));
-app.get('/render/:diagram', async (req, res, next) => {
-   const result = await process(req.params.diagram);
-   if (result.type === 'error') {
-      return next(result.error);
-   }
+const app = express();
 
-   res.writeHead(200, { 'Content-Type': 'image/png' });
-   try {
-      await writer(res, result.value);
-   } catch (err) {
-      if (err instanceof Error) {
-         return next(
-            createError(500, `failed to write PNG stream: ${err.message}`)
-         );
-      }
-   }
-   res.end();
-});
+app.use(
+   helmet({
+      contentSecurityPolicy: false,
+   })
+);
+app.use(cors());
+app.use(logger('dev'));
+app.disable('x-powered-by');
+
+// serve a few things specifically
+app.get('/render/:diagram', handleRender);
+app.get('/health', handleHealth);
 app.use(express.static(dist));
-app.get('*', (_, res) => res.sendFile(path.join(dist, 'index.html')));
+
+// delegate to the frontend for all other routes
+app.use((_, response) => response.sendFile(path.join(dist, 'index.html')));
+
+app.use(errorHandler);
 
 app.listen(port, () => {
    return console.log(`Express is listening at http://localhost:${port}`);
 });
-
-const writer = async (res: Response, stream: Buffer) => {
-   return new Promise<void>((resolve, reject) => {
-      res.write(stream, (err) => {
-         if (err) {
-            reject(err);
-         } else {
-            resolve();
-         }
-      });
-   });
-};

@@ -78,7 +78,7 @@ export const defaultStyle = (): Style => {
          padding: padAll(25),
       },
       title: {
-         padding: padAll(25),
+         padding: padTbLr(25, 0),
          font: newFont('Helvetica', 36),
       },
       lifeline: {

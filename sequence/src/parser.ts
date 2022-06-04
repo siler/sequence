@@ -17,6 +17,7 @@ import {
    str,
    terminated,
    preceded,
+   fail,
 } from './combi';
 
 // A parsed sequence diagram with ordered lists of participants and messages
@@ -60,7 +61,7 @@ export interface ParseSuccess {
 
 export interface ParseFailure {
    type: 'failure';
-   reason: Failure | Error;
+   reason: Failure;
 }
 
 // parse a SequenceDiagram from a string
@@ -72,6 +73,8 @@ export const parseDiagram = (code: string): ParseResult => {
    const result = diagram({ input: code, index: 0 });
    if (result.type === 'success') {
       return { type: 'success', diagram: result.value };
+   } else if (result.type === 'error') {
+      return { type: 'failure', reason: fail(result) };
    }
 
    return { type: 'failure', reason: result };

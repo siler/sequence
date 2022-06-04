@@ -23,7 +23,7 @@ build:
     npx tsc
 
 # issue a quality new build of the server
-release: clean fmt test build 
+release: clean test build 
 
 # start the server
 start:

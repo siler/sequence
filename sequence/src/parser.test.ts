@@ -13,7 +13,6 @@ Cynthia -> Alan
    const res = parseDiagram(input);
 
    // then
-   expect(res).not.toBeNull();
    expect(res.type).toBe('success');
    if (res.type !== 'success') {
       return;

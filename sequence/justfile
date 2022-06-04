@@ -23,4 +23,4 @@ build:
     npx tsc
 
 # mint a fancy new build of sequence
-release: clean fmt test build 
+release: clean test build 

@@ -27,7 +27,7 @@ build:
     npx react-scripts build
 
 # create a freshly prepared build
-release: clean fmt generate test build 
+release: clean generate test build 
 
 # start a frontend development server
 start:

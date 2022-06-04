@@ -28,29 +28,13 @@ export const render = (
       graphics.scale(scale, scale);
    }
 
-   const lifeline = diagram.lifelines.slice(-1)[0];
-   let bottomRight: Point;
-   if (!lifeline) {
-      bottomRight = { x: 0, y: 0 };
-   } else {
-      bottomRight = {
-         x:
-            right(diagram.lifelines.slice(-1)[0].box) +
-            style.frame.padding.right,
-         y:
-            bottom(lifeline.box) +
-            diagram.lifelineHeight +
-            style.frame.padding.bottom,
-      };
-   }
-
    withState(graphics, () => {
       graphics.fillStyle('#fff');
-      graphics.rect(0, 0, bottomRight.x, bottomRight.y).fill();
+      graphics.rect(0, 0, diagram.size.width, diagram.size.height).fill();
    });
 
    if (diagram.title) {
-      drawTitle(graphics, style, diagram.title, bottomRight.x);
+      drawTitle(graphics, style, diagram.title, diagram.size.width);
    }
 
    for (const lifeline of diagram.lifelines) {

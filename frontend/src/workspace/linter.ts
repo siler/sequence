@@ -24,8 +24,13 @@ const makeSource = (onParse: OnParse, OnError: OnError): LintSource => {
          return `caused by ${error.description}`;
       };
 
-      const from = result.reason.ctx.index;
       const message = cause(result.reason);
+      let from = result.reason.ctx.index;
+
+      // this is pretty cludgy for an error at the end of the file
+      if (from >= code.length) {
+         from = code.length - 1;
+      }
 
       let to = code.slice(from).search(/[ \t\n]/);
       if (to === -1) {
@@ -33,6 +38,9 @@ const makeSource = (onParse: OnParse, OnError: OnError): LintSource => {
       } else {
          to = from + to;
       }
+      console.log('to: ' + to);
+      console.log('from: ' + from);
+      console.log('code: ' + code);
 
       const diagnostic: Diagnostic = {
          severity: 'error',

@@ -4,8 +4,7 @@ import { Workspace } from './workspace';
 import { reducer, initializer, initialState } from './state';
 import { setCachedDiagram } from './store';
 import { useParams } from 'react-router-dom';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { toast } from 'react-toastify';
 import './App.css';
 
 export const App = () => {
@@ -48,17 +47,6 @@ export const App = () => {
             text={state.code}
             diagram={state.diagram}
             canvas={canvas}
-         />
-         <ToastContainer
-            position="bottom-center"
-            autoClose={5000}
-            hideProgressBar={false}
-            newestOnTop={false}
-            closeOnClick={true}
-            rtl={false}
-            pauseOnFocusLoss={false}
-            draggable={false}
-            pauseOnHover={true}
          />
       </div>
    );

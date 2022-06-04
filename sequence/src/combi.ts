@@ -74,8 +74,8 @@ export const newError = (
 /**
  * helper to turn an error into a failure
  */
-export const fail = (error: Error, message: string): Failure => {
-   return newFailure(error.ctx, message, error);
+export const fail = (error: Error, message?: string): Failure => {
+   return newFailure(error.ctx, message ? message : error.description, error);
 };
 
 /**

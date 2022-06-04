@@ -70,32 +70,18 @@ export const depadBox = (box: Box, padding: Padding): Box => {
    return { x, y, width, height };
 };
 
-const findTopLeft = (style: Style, title?: string): Point => {
-   if (title) {
-      return {
-         x: style.frame.padding.left,
-         y:
-            style.frame.padding.top +
-            vertical(style.title.padding) +
-            style.title.font.size,
-      };
-   } else {
-      return { x: style.frame.padding.left, y: style.frame.padding.top };
-   }
-};
-
 export const layout = (
    parsed: ParsedDiagram,
    measurer: Measurer,
    style: Style
 ): Diagram => {
-   const topLeft = findTopLeft(style, parsed.title);
+   const titleExtent = layoutTitle(style, measurer, parsed.title);
 
    const lifelines = layoutLifelines(
       parsed.participants,
       style.lifeline,
       measurer,
-      topLeft
+      titleExtent
    );
 
    const signals = layoutSignals(lifelines, parsed.messages, measurer, style);
@@ -107,7 +93,7 @@ export const layout = (
    const lifelineHeight =
       style.lifeline.margin.bottom + signalsHeight + style.signal.font.size;
 
-   const size = computeSize(lifelines, lifelineHeight, style, parsed.title);
+   const size = computeSize(lifelines, lifelineHeight, style, titleExtent);
 
    return {
       title: parsed.title,
@@ -135,6 +121,27 @@ interface Allotment {
    count: number;
 }
 
+const layoutTitle = (style: Style, measurer: Measurer, title?: string): Box => {
+   const point = {
+      x: style.frame.padding.left,
+      y: style.frame.padding.top,
+   };
+   if (title) {
+      const extent = measurer.measure(title, style.title.font);
+      return {
+         ...point,
+         width: horizontal(style.title.padding) + extent.width,
+         height: vertical(style.title.padding) + extent.height,
+      };
+   } else {
+      return {
+         ...point,
+         width: horizontal(style.title.padding),
+         height: vertical(style.title.padding),
+      };
+   }
+};
+
 /**
  * generates a list of lifelines laid out left to right in order.
  *
@@ -147,9 +154,9 @@ const layoutLifelines = (
    participants: Participant[],
    style: LifelineStyle,
    measurer: Measurer,
-   topLeft: Point
+   titleBox: Box
 ): Lifeline[] => {
-   let nextLeft = topLeft.x;
+   let nextLeft = titleBox.x;
 
    const extents = participants.map((participant) =>
       measurer.measure(participant.name, style.font)
@@ -157,7 +164,7 @@ const layoutLifelines = (
 
    return participants.map((participant, idx) => {
       const x = nextLeft;
-      const y = topLeft.y;
+      const y = bottom(titleBox);
       const width = extents[idx].width;
       const height = style.font.size;
       const extent = pad(pad({ width, height }, style.padding), style.margin);
@@ -281,24 +288,25 @@ const computeSize = (
    lifelines: Lifeline[],
    lifelineHeight: number,
    style: Style,
-   title?: string
+   titleBox: Box
 ): Extent => {
    const rightmost = lifelines.slice(-1)[0];
 
    if (rightmost) {
+      const diagramWidth = right(rightmost.box) + style.frame.padding.right;
+      const width = Math.max(
+         titleBox.width + horizontal(style.frame.padding),
+         diagramWidth
+      );
       return {
-         width: right(rightmost.box) + style.frame.padding.right,
+         width,
          height:
-            bottom(rightmost.box) + style.frame.padding.bottom + lifelineHeight,
+            bottom(rightmost.box) + lifelineHeight + style.frame.padding.bottom,
       };
    } else {
-      const titleHeight = title
-         ? vertical(style.title.padding) + style.title.font.size
-         : 0;
-
       return {
-         width: horizontal(style.frame.padding),
-         height: titleHeight + vertical(style.frame.padding),
+         width: titleBox.width + horizontal(style.frame.padding),
+         height: titleBox.height + vertical(style.frame.padding),
       };
    }
 };

@@ -39,11 +39,15 @@ build:
     just server/build
 
 # make a sparkly build of everything
-release: clean fmt generate test build 
+release: clean generate test build 
 
 # run a dev server which reloads on change
 server:
     npx -w server nodemon src/app.ts
+
+rebuild:
+    just sequence/build
+    just frontend/build
 
 # build a realize docker image 
 image:
@@ -51,4 +55,4 @@ image:
 
 # run the latest realize image
 container:
-    docker run -d -p 8080:8080 realize
+    docker run -d -p 80:80 realize
