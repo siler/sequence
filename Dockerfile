@@ -1,8 +1,8 @@
 FROM node:18
 
 # HTTP
-EXPOSE 80
-ENV REACT_APP_PORT 80
+EXPOSE 3000
+ENV REACT_APP_PORT 3000
 
 # For canvas
 RUN apt-get update
