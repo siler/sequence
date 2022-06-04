@@ -1,8 +1,8 @@
 FROM node:18
 
 # HTTP
-EXPOSE 80
-ENV REACT_APP_PORT 80
+EXPOSE 8080
+ENV REACT_APP_PORT 8080
 
 # For canvas
 RUN apt-get update
@@ -31,4 +31,4 @@ COPY --chown=node:node . .
 RUN just release
 
 # and run
-ENTRYPOINT [ "node", "./server/dist/app.js", "--port", "80"]
+ENTRYPOINT [ "node", "./server/dist/app.js"]
