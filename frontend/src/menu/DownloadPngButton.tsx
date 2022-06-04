@@ -1,8 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-
-const makeSafeFilename = (str: string): string => {
-   return str.replace(/[/|\\:*?"<>]/g, '_');
-};
+import { Button } from '../components';
 
 export interface DownloadPngProps {
    canvas: HTMLCanvasElement | null;
@@ -22,7 +19,7 @@ export const DownloadPng: React.FC<DownloadPngProps> = ({
          return 'sequenceDiagram.png';
       }
 
-      return `${makeSafeFilename(title)}.png`;
+      return title + '.png';
    }, [title]);
 
    useEffect(() => {
@@ -40,10 +37,10 @@ export const DownloadPng: React.FC<DownloadPngProps> = ({
    }, [canvas, setUrl, open]);
 
    return (
-      <a download={filename} href={url}>
-         <div className="btn btn-indigo mt-4 flex justify-center items-center">
-            Download .png
-         </div>
+      <a className={'col-span-2'} download={filename} href={url}>
+         <Button>
+            <span>Download .png</span>
+         </Button>
       </a>
    );
 };

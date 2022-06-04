@@ -1,9 +1,15 @@
+/* For some reason h-[calc(100% - 1rem)] doesn't work */
 .screen-window-height {
    height: calc(100vh - 1rem);
 }
 
+/* There is no way to apply gutter styles via JS */
+
 .gutter {
-   @apply bg-gray-300;
+   @apply bg-gradient-to-r;
+   @apply from-slate-300;
+   @apply via-slate-400;
+   @apply to-slate-300;
 }
 
 .gutter-horizontal {

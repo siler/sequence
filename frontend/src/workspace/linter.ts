@@ -7,7 +7,7 @@ export type OnError = { (error: Error | Failure): void };
 
 const makeSource = (onParse: OnParse, OnError: OnError): LintSource => {
    return (view: EditorView) => {
-      const code = view.state.doc.toJSON().join('\n');
+      const code = view.state.doc.toString();
       const result = parseDiagram(code);
       if (result.type === 'success') {
          onParse(result.diagram);

@@ -1,17 +1,3 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-.without-ring {
-   @apply focus:ring-0;
-}
-
-.btn {
-   @apply font-bold text-white py-2 px-4 rounded border-white border-2 rounded-lg cursor-pointer select-none;
-}
-.btn-indigo {
-   @apply bg-indigo-500 ;
-}
-.btn-indigo:hover {
-   @apply bg-indigo-700;
-}

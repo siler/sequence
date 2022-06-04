@@ -4,7 +4,7 @@ import 'react-toastify/dist/ReactToastify.css';
 
 export const Shell = () => {
    return (
-      <div>
+      <div className='bg-slate-300'>
          <Outlet />
          <ToastContainer
             position="bottom-center"

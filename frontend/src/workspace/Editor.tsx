@@ -1,21 +1,13 @@
-import { Compartment, EditorState, Text } from '@codemirror/state';
-import {
-   EditorView,
-   keymap,
-   PluginValue,
-   ViewPlugin,
-   ViewUpdate,
-} from '@codemirror/view';
+import { Compartment, EditorState } from '@codemirror/state';
+import { EditorView, keymap } from '@codemirror/view';
 import { basicSetup } from '@codemirror/basic-setup';
 import { indentWithTab } from '@codemirror/commands';
 import { useEffect, useMemo, useRef } from 'react';
-import { debounce } from '../debounce';
 import { sequence } from '../syntax';
 import { dispatchFn, setCode, setDiagram } from '../state';
 import { ParsedDiagram } from '@sriler/sequence';
 import './Editor.css';
-
-export type OnEditorUpdate = { (content: string): void };
+import { newUpdateNotifier } from './notifier';
 
 export type EditorProps = {
    dispatch: dispatchFn;
@@ -77,32 +69,4 @@ export const Editor = ({ dispatch, text }: EditorProps) => {
    }, [editorState, parent]);
 
    return <div ref={parent} />;
-};
-
-/**
- * creates a new ViewPlugin which calls a list of OnEditorUpdate functions
- * when the document state changes.
- */
-const newUpdateNotifier = <V extends PluginValue>(
-   onUpdates: OnEditorUpdate[]
-): ViewPlugin<V> => {
-   return ViewPlugin.fromClass(
-      class {
-         readonly debounce: (arg: Text) => void;
-
-         constructor(public readonly view: EditorView) {
-            this.view = view;
-            this.debounce = debounce(100, (doc) => {
-               const str = doc.toJSON().join('\n');
-               onUpdates.forEach((onUpdate) => onUpdate(str));
-            });
-         }
-
-         update(update: ViewUpdate) {
-            if (update.docChanged) {
-               this.debounce(this.view.state.doc);
-            }
-         }
-      }
-   );
 };

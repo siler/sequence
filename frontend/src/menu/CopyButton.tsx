@@ -4,10 +4,11 @@ import {
 } from '@heroicons/react/outline';
 import React, { useMemo, useState } from 'react';
 import CopyToClipboard from 'react-copy-to-clipboard';
+import { Button } from '../components';
 
 export interface CopyButtonProps {
-   name: string;
    data: string;
+   name?: string;
 }
 
 export const CopyButton: React.FC<CopyButtonProps> = ({ name, data }) => {
@@ -42,15 +43,18 @@ export const CopyButton: React.FC<CopyButtonProps> = ({ name, data }) => {
       setLastTimeout(timeout);
    };
 
+   const nameSpan = name ? <span>{name}</span> : undefined;
+
    return (
-      <CopyToClipboard onCopy={debouncedShowCopied} text={data}>
-         <div
-            tabIndex={-1}
-            className="btn btn-indigo mt-4 flex flex-row justify-between items-center"
-         >
-            <span>{name}</span>
+      <CopyToClipboard
+         onCopy={debouncedShowCopied}
+         text={data}
+         options={{ debug: true }}
+      >
+         <Button classes={['w-auto']}>
+            {nameSpan}
             {clipboard}
-         </div>
+         </Button>
       </CopyToClipboard>
    );
 };

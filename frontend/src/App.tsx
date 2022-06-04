@@ -33,7 +33,7 @@ export const App = () => {
    }, [decodeFailed]);
 
    return (
-      <div className="h-screen bg-gray-300 p-2">
+      <div className="h-screen bg-slate-300 p-2">
          <Menu
             dispatch={dispatch}
             canvas={canvas.current}
