@@ -55,4 +55,4 @@ image:
 
 # run the latest realize image
 container:
-    docker run -d -p 8080:8080 realize
+    docker run -d -p 80:80 realize

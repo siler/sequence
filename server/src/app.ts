@@ -11,6 +11,8 @@ import { handleHealth } from './health';
 const port = process.env.REACT_APP_PORT || 3000;
 const dist = path.join(__dirname, '..', '..', 'frontend', 'build');
 
+console.log(`starting express to serve '${dist}' on port ${port}`);
+
 const app = express();
 
 app.use(
