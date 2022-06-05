@@ -1,19 +1,14 @@
 import type { Error, Failure } from './combi';
-export type { Error, Failure };
-
-import type { ParsedDiagram } from './parser';
-export type { ParsedDiagram };
-export { parseDiagram, newEmptyDiagram } from './parser';
-
 import type { Graphics } from './graphics';
-export type { Graphics };
-
-import type { Point, Extent, Measurer } from './layout';
-export type { Point, Extent, Measurer };
-export { layout } from './layout';
-
-export { render } from './render';
-
+import type { Extent, Measurer, Point } from './layout';
+import type { ParsedDiagram } from './parser';
 import type { Font, FontStyle, FontWeight } from './style';
-export type { Font, FontStyle, FontWeight };
+export { layout } from './layout';
+export { newEmptyDiagram, parseDiagram } from './parser';
+export { render } from './render';
 export { defaultStyle } from './style';
+export type { Error, Failure };
+export type { ParsedDiagram };
+export type { Graphics };
+export type { Point, Extent, Measurer };
+export type { Font, FontStyle, FontWeight };

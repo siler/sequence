@@ -1,10 +1,10 @@
 import {
-   Point,
-   Graphics,
    Extent,
    Font,
    FontStyle,
    FontWeight,
+   Graphics,
+   Point,
 } from '@sriler/sequence';
 
 export const newGraphics = (canvas: HTMLCanvasElement): Graphics => {

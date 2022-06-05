@@ -20,7 +20,7 @@ Me -> You
    } else if (request.accepts('html')) {
       const result = drawUrl(code);
       if (result.type === 'error') {
-         return next(createError(500, 'drawing to url', result.error));
+         return next(result.error);
       }
 
       const html = `<!DOCTYPE html>
@@ -36,7 +36,7 @@ Me -> You
    } else if (request.accepts('json')) {
       const result = drawUrl(code);
       if (result.type === 'error') {
-         return next(createError(500, 'drawing to url', result.error));
+         return next(result.error);
       }
       const json = `{
    "aHealthyUrl": "${result.value}"
@@ -45,7 +45,7 @@ Me -> You
    } else {
       const result = drawUrl(code);
       if (result.type === 'error') {
-         return next(createError(500, 'drawing to url', result.error));
+         return next(result.error);
       }
       return writeResponse(response, next, result.value, 'text');
    }

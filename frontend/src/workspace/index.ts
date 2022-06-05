@@ -1,3 +1,3 @@
-import type { WorkspaceActions, SetCode, SetDiagram } from './actions';
-export type { WorkspaceActions, SetCode, SetDiagram };
+import type { SetCode, SetDiagram, WorkspaceActions } from './actions';
 export { Workspace } from './Workspace';
+export type { WorkspaceActions, SetCode, SetDiagram };

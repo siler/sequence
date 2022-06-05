@@ -15,6 +15,7 @@
 -  change delay syntax to an attribute
 -  add indentation support to editor
 -  modify parser to collect warnings and resume after errors
+-  handle vertical vs horizontal orientations
 
 # Bugs
 

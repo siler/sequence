@@ -1,20 +1,16 @@
-import { Request, Response, NextFunction } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { HttpError } from 'http-errors';
 import createError = require('http-errors');
 
 export const errorHandler = (
    error: TypeError | HttpError,
-   _request: Request,
+   request: Request,
    response: Response,
    next: NextFunction
 ) => {
-   if (process.env.NODE_ENV === 'production') {
-      response.writeHead(error instanceof HttpError ? error.statusCode : 500);
-      response.end();
-      return;
-   }
-
-   next(error);
+   response.writeHead(error instanceof HttpError ? error.statusCode : 500);
+   response.end();
+   return;
 };
 
 export type Result<V, E> = Success<V> | Error<E>;

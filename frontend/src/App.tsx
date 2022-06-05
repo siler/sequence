@@ -1,14 +1,16 @@
+import { EditorView } from '@codemirror/view';
 import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
-import { Menu, MenuButton } from './menu';
-import { Workspace } from './workspace';
-import { reducer, initializer, initialState } from './state';
-import { setCachedDiagram } from './store';
 import { useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { EditorView } from '@codemirror/view';
 import './App.css';
+import { Menu, MenuButton } from './menu';
+import { useOrientation } from './orientation';
+import { initializer, initialState, reducer } from './state';
+import { setCachedDiagram } from './store';
+import { Workspace } from './workspace';
 
 export const App = () => {
+   const orientation = useOrientation();
    const [decodeFailed, setDecodeFailed] = useState(false);
    const { diagram } = useParams();
    const [state, dispatch] = useReducer(
@@ -20,15 +22,15 @@ export const App = () => {
    const canvas = useRef<HTMLCanvasElement | null>(null);
 
    const extensions = useMemo(() => {
+      const height = orientation === 'landscape' ? '100vh' : '50vh';
       return [
          EditorView.theme({
             '&': {
-               height: '100vh',
-               border: '0',
+               height,
             },
          }),
       ];
-   }, []);
+   }, [orientation]);
 
    useEffect(() => {
       if (state.code) {
@@ -43,6 +45,8 @@ export const App = () => {
       }
    }, [decodeFailed]);
 
+   const classes = [orientation === 'landscape' ? 'h-screen' : 'h-1/2', 'z-0'];
+
    return (
       <div>
          <Menu
@@ -51,14 +55,19 @@ export const App = () => {
             open={state.menuOpen}
             code={state.code}
             title={state.diagram.title}
+            classes={['z-20']}
          />
-         <MenuButton dispatch={dispatch} open={state.menuOpen} />
+         <MenuButton
+            dispatch={dispatch}
+            open={state.menuOpen}
+            classes={['z-10']}
+         />
          <Workspace
             dispatch={dispatch}
             text={state.code}
             diagram={state.diagram}
             canvas={canvas}
-            classes={['h-screen']}
+            classes={classes}
             extensions={extensions}
          />
       </div>

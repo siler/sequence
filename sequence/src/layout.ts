@@ -1,13 +1,13 @@
+import { Diagram, Direction, Lifeline, Signal } from './model';
 import { Message, ParsedDiagram, Participant } from './parser';
-import { Lifeline, Diagram, Signal, Direction } from './model';
 import {
-   LifelineStyle,
-   SignalStyle as SignalStyle,
-   Padding,
-   Style,
-   horizontal,
-   vertical,
    Font,
+   horizontal,
+   LifelineStyle,
+   Padding,
+   SignalStyle,
+   Style,
+   vertical,
 } from './style';
 
 /**

@@ -45,6 +45,7 @@ release: clean generate test build
 server:
     npx -w server nodemon src/app.ts
 
+# rebuild sequence and the frontend for serving
 rebuild:
     just sequence/build
     just frontend/build

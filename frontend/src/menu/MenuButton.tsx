@@ -1,13 +1,14 @@
+import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/solid';
 import clsx from 'clsx';
-import { ChevronRightIcon, ChevronLeftIcon } from '@heroicons/react/solid';
 import { MenuDispatchFn, setMenuOpen } from './actions';
 
 export interface MenuButtonProps {
    dispatch: MenuDispatchFn;
    open: boolean;
+   classes: string[];
 }
 
-export const MenuButton = ({ dispatch, open }: MenuButtonProps) => {
+export const MenuButton = ({ dispatch, open, classes }: MenuButtonProps) => {
    const always = [
       'fixed',
       'top-0',
@@ -30,15 +31,17 @@ export const MenuButton = ({ dispatch, open }: MenuButtonProps) => {
       'hover:opacity-100',
       'hover:scale-125',
    ];
-   const classes = clsx(
-      open && ['opacity-0', 'translate-x-16'],
-      !open && ['opacity-[.33]', 'translate-x-0'],
+   const className = clsx(
+      open
+         ? ['opacity-0', 'translate-x-16']
+         : ['opacity-[.33]', 'translate-x-0'],
+      classes,
       always
    );
 
    return (
       <div
-         className={classes}
+         className={className}
          onClick={() => {
             dispatch(setMenuOpen(!open));
          }}

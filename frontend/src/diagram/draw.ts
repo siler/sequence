@@ -1,9 +1,9 @@
 import {
-   ParsedDiagram,
+   defaultStyle,
    Extent,
    layout,
+   ParsedDiagram,
    render,
-   defaultStyle,
 } from '@sriler/sequence';
 import { newGraphics } from './graphics';
 

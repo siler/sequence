@@ -1,12 +1,12 @@
-import { Canvas } from 'canvas';
 import {
-   Point,
-   Graphics,
    Extent,
    Font,
    FontStyle,
    FontWeight,
+   Graphics,
+   Point,
 } from '@sriler/sequence';
+import { Canvas } from 'canvas';
 
 export const newGraphics = (canvas: Canvas): Graphics => {
    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

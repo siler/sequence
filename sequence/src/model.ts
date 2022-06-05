@@ -1,5 +1,5 @@
-import { MessageProperties } from './parser';
 import { Box, Extent } from './layout';
+import { MessageProperties } from './parser';
 
 export type Direction = 'ltr' | 'rtl' | 'none';
 

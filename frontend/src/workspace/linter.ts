@@ -1,6 +1,6 @@
 import { Diagnostic, linter, LintSource } from '@codemirror/lint';
 import { EditorView } from '@codemirror/view';
-import { parseDiagram, ParsedDiagram, Error, Failure } from '@sriler/sequence';
+import { Error, Failure, ParsedDiagram, parseDiagram } from '@sriler/sequence';
 
 export type OnParse = { (content: ParsedDiagram): void };
 export type OnError = { (error: Error | Failure): void };
@@ -38,9 +38,6 @@ const makeSource = (onParse: OnParse, OnError: OnError): LintSource => {
       } else {
          to = from + to;
       }
-      console.log('to: ' + to);
-      console.log('from: ' + from);
-      console.log('code: ' + code);
 
       const diagnostic: Diagnostic = {
          severity: 'error',

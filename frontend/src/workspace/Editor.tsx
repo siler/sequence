@@ -70,7 +70,6 @@ export const Editor = ({ dispatch, text, extensions }: EditorProps) => {
       });
 
       return () => {
-         console.log('destroying view');
          view.destroy();
       };
    }, [editorState, parent]);

@@ -1,7 +1,7 @@
 import produce from 'immer';
-import { State } from './state';
 import { MenuActions } from '../menu';
 import { WorkspaceActions } from '../workspace';
+import { State } from './state';
 
 type Action = MenuActions | WorkspaceActions;
 

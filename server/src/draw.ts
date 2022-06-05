@@ -1,14 +1,14 @@
 import {
-   parseDiagram,
-   layout,
-   render,
    defaultStyle,
    Extent,
+   layout,
+   parseDiagram,
+   render,
 } from '@sriler/sequence';
-import { newGraphics } from './graphics';
 import { Canvas } from 'canvas';
-import { newError, newSuccess, Result } from './error';
 import { HttpError } from 'http-errors';
+import { newError, newSuccess, Result } from './error';
+import { newGraphics } from './graphics';
 import createError = require('http-errors');
 
 const SCALE = 1.0;
@@ -35,8 +35,9 @@ const drawToCanvas = (code: string): Result<Canvas, HttpError> => {
 
    const result = parseDiagram(code);
    if (result.type === 'failure') {
-      console.log(result);
-      return newError(createError(500, 'drawing to canvas', result));
+      return newError(
+         createError(500, 'drawing to canvas: ' + result.reason.description)
+      );
    }
 
    const measurer = graphics.measurer();

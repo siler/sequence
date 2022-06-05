@@ -1,8 +1,8 @@
 import clsx from 'clsx';
 import React, { FocusEvent, useEffect, useRef, useState } from 'react';
-import { Button } from './Button';
-import { MenuDispatchFn, setMenuOpen } from './actions';
 import { encode } from '../urlCode';
+import { MenuDispatchFn, setMenuOpen } from './actions';
+import { Button } from './Button';
 import { CopyButton } from './CopyButton';
 import { DownloadPng } from './DownloadPngButton';
 
@@ -12,6 +12,7 @@ interface MenuProps {
    code: string;
    canvas: HTMLCanvasElement | null;
    title?: string;
+   classes?: string[];
 }
 
 export const Menu: React.FC<MenuProps> = ({
@@ -20,6 +21,7 @@ export const Menu: React.FC<MenuProps> = ({
    code,
    canvas,
    title,
+   classes,
 }) => {
    const [encoded, setEncoded] = useState('');
    const [onBlurEnabled, setOnBlurEnabled] = useState(true);
@@ -78,8 +80,8 @@ export const Menu: React.FC<MenuProps> = ({
       'focus:outline-none',
    ];
    const menuClasses = clsx(
-      open && 'translate-x-0',
-      !open && 'translate-x-64',
+      classes,
+      open ? 'translate-x-0' : 'translate-x-64',
       always
    );
    const labelClasses = 'text-lg pl-2 pr-2 text-right self-center';

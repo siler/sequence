@@ -1,7 +1,7 @@
 import { EditorView } from '@codemirror/view';
 import { newEmptyDiagram } from '@sriler/sequence';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { RoutedLink, HrefLink, Article, Code } from './article';
+import { Article, Code, HrefLink, RoutedLink } from './article';
 import { LinkSpan } from './article/LinkSpan';
 import { Workspace, WorkspaceActions } from './workspace';
 
@@ -12,7 +12,6 @@ const someNonsense =
 
 export const Home = () => {
    const canvas = useRef<HTMLCanvasElement | null>(null);
-
    const [text, setText] = useState(`title: Sequence
 
 You -> Browser
@@ -30,11 +29,9 @@ Browser --> You
       (action: WorkspaceActions) => {
          switch (action.type) {
             case 'setCode':
-               console.log('setting text');
                setText(action.code);
                break;
             case 'setDiagram':
-               console.log('setting diagram');
                setDiagram(action.diagram);
                break;
             default:
@@ -79,17 +76,18 @@ Browser --> You
 
    return (
       <Article>
-         <h1>Welcome to Sequence</h1>
+         <h1>
+            Welcome to <RoutedLink to="/edit">Sequence</RoutedLink>
+         </h1>
          <p>
-            If you know why you're here, hop over to the{' '}
-            <RoutedLink to="/edit">editor</RoutedLink>. Otherwise, this is a
-            sequence diagram editor. It aims to be a pleasant way of interacting
-            with sequence diagrams. It has a couple of neat features:
+            Sequence is a sequence diagram editor. It aims to be a pleasant way
+            of interacting with sequence diagrams. Here are some of its
+            features:
          </p>
          <h2>Live Editing</h2>
          <p>
-            With convenient client-side rendering results can be seen
-            immediately.
+            Sequence has a tailored editing experience with error reporting and
+            convenient client-side rendering so results can be seen immediately.
          </p>
          <Workspace
             canvas={canvas}

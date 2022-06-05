@@ -1,10 +1,10 @@
 import {
-   Error,
-   Failure,
    any,
    clean,
    discard,
    eof,
+   fail,
+   Failure,
    filterNull,
    many,
    manyZero,
@@ -12,12 +12,11 @@ import {
    must,
    optional,
    pair,
+   preceded,
    regex,
    sequence,
    str,
    terminated,
-   preceded,
-   fail,
 } from './combi';
 
 // A parsed sequence diagram with ordered lists of participants and messages

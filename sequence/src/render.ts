@@ -1,12 +1,12 @@
 import { Graphics } from './graphics';
 import {
-   Extent,
-   Point,
    bottom,
    centerX,
    depadBox,
    distance,
+   Extent,
    inclinationAngle,
+   Point,
    right,
 } from './layout';
 import { Diagram, Lifeline, Signal } from './model';

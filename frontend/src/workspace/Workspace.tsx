@@ -1,12 +1,13 @@
-import React, { useEffect } from 'react';
-import Split from 'react-split';
-import { Editor } from './Editor';
-import { ParsedDiagram } from '@sriler/sequence';
-import { drawDiagram } from '../diagram';
-import { workspaceDispatchFn } from './actions';
-import './Workspace.css';
-import clsx from 'clsx';
 import { Extension } from '@codemirror/state';
+import { ParsedDiagram } from '@sriler/sequence';
+import clsx from 'clsx';
+import React, { useEffect, useState } from 'react';
+import Split from 'react-split';
+import { drawDiagram } from '../diagram';
+import { useOrientation } from '../orientation';
+import { workspaceDispatchFn } from './actions';
+import { Editor } from './Editor';
+import './Workspace.css';
 
 export interface WorkspaceProps {
    dispatch: workspaceDispatchFn;
@@ -40,29 +41,53 @@ export const Workspace = ({
       }
    }, [diagram, canvas]);
 
+   const orientation = useOrientation();
+   const [counter, setCounter] = useState(0);
+
+   // a trick to rerender the split when the orientation changes
+   useEffect(() => {
+      setCounter((previous: number) => previous + 1);
+   }, [orientation]);
+
    const first = firstSplitPercent ? firstSplitPercent : 30;
    const second = 100 - first;
 
-   const both = ['overflow-auto'];
+   const landscape = orientation === 'landscape';
+
+   const bothClasses = ['overflow-auto'];
    const editorClasses = clsx(
-      both,
       classes,
+      bothClasses,
       'bg-white',
-      inset && ['border-t-2', 'border-l-2', 'border-b-2']
+      inset && [
+         'border-t-2',
+         'border-l-2',
+         landscape ? 'border-b-2' : 'border-r-2',
+      ]
    );
    const canvasClasses = clsx(
-      both,
       classes,
+      bothClasses,
       'flex',
       'justify-center',
       'items-center',
-      inset && ['border-t-2', 'border-r-2', 'border-b-2']
+      inset && [
+         'border-r-2',
+         'border-b-2',
+         landscape ? 'border-t-2' : 'border-l-2',
+      ]
    );
+
+   const splitClasses = clsx('flex', landscape ? 'flex-row' : 'flex-col');
+
+   const direction = landscape ? 'horizontal' : 'vertical';
 
    return (
       <Split
+         key={counter}
          sizes={[first, second]}
-         className="flex flex-row"
+         className={splitClasses}
+         direction={direction}
          gutterSize={4}
          minSize={200}
          expandToMin={true}
