@@ -18,9 +18,9 @@ fmt:
 test:
     npx jest
 
-# build sequence
+# build core
 build:
     npx tsc
 
-# mint a fancy new build of sequence
+# mint a fancy new build of core
 release: clean test build 

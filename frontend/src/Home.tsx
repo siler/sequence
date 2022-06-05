@@ -1,5 +1,5 @@
 import { EditorView } from '@codemirror/view';
-import { newEmptyDiagram } from '@sriler/sequence';
+import { newEmptyDiagram } from '@sriler/sequence-core';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Article, Code, HrefLink, RoutedLink } from './article';
 import { LinkSpan } from './article/LinkSpan';

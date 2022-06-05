@@ -1,4 +1,4 @@
-import { ParsedDiagram } from '@sriler/sequence';
+import { ParsedDiagram } from '@sriler/sequence-core';
 
 export type workspaceDispatchFn = (action: WorkspaceActions) => void;
 export type WorkspaceActions = SetCode | SetDiagram;

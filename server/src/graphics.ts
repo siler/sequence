@@ -5,7 +5,7 @@ import {
    FontWeight,
    Graphics,
    Point,
-} from '@sriler/sequence';
+} from '@sriler/sequence-core';
 import { Canvas } from 'canvas';
 
 export const newGraphics = (canvas: Canvas): Graphics => {

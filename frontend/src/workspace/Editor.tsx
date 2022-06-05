@@ -1,12 +1,12 @@
-import { Compartment, EditorState, Extension } from '@codemirror/state';
-import { EditorView, keymap } from '@codemirror/view';
 import { basicSetup } from '@codemirror/basic-setup';
 import { indentWithTab } from '@codemirror/commands';
+import { Compartment, EditorState, Extension } from '@codemirror/state';
+import { EditorView, keymap } from '@codemirror/view';
+import { ParsedDiagram } from '@sriler/sequence-core';
 import { useEffect, useMemo, useRef } from 'react';
 import { sequence } from '../syntax';
-import { ParsedDiagram } from '@sriler/sequence';
+import { setCode, setDiagram, workspaceDispatchFn } from './actions';
 import { newUpdateNotifier } from './notifier';
-import { workspaceDispatchFn, setCode, setDiagram } from './actions';
 
 export type EditorProps = {
    dispatch: workspaceDispatchFn;

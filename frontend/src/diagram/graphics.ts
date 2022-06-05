@@ -5,7 +5,7 @@ import {
    FontWeight,
    Graphics,
    Point,
-} from '@sriler/sequence';
+} from '@sriler/sequence-core';
 
 export const newGraphics = (canvas: HTMLCanvasElement): Graphics => {
    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

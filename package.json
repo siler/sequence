@@ -1,8 +1,8 @@
 {
-   "name": "@sriler/realize",
+   "name": "@sriler/sequence",
    "workspaces": [
       "frontend",
-      "sequence",
+      "core",
       "server"
    ],
    "dependencies": {

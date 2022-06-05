@@ -20,8 +20,8 @@ WORKDIR /home/node/app
 
 # do this dance to cache npm install between package file changes
 COPY --chown=node:node package*.json .
-RUN mkdir sequence frontend server
-COPY --chown=node:node sequence/package*.json sequence
+RUN mkdir core frontend server
+COPY --chown=node:node core/package*.json core
 COPY --chown=node:node frontend/package*.json frontend
 COPY --chown=node:node server/package*.json server
 

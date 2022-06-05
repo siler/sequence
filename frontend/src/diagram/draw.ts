@@ -4,7 +4,7 @@ import {
    layout,
    ParsedDiagram,
    render,
-} from '@sriler/sequence';
+} from '@sriler/sequence-core';
 import { newGraphics } from './graphics';
 
 export const draw = (

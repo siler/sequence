@@ -1,4 +1,4 @@
-import { newEmptyDiagram, ParsedDiagram } from '@sriler/sequence';
+import { newEmptyDiagram, ParsedDiagram } from '@sriler/sequence-core';
 import { getCachedDiagram } from '../store';
 import { decode } from '../urlCode';
 

@@ -1,5 +1,5 @@
 import { Extension } from '@codemirror/state';
-import { ParsedDiagram } from '@sriler/sequence';
+import { ParsedDiagram } from '@sriler/sequence-core';
 import clsx from 'clsx';
 import React, { useEffect, useState } from 'react';
 import Split from 'react-split';

@@ -4,7 +4,7 @@ import {
    layout,
    parseDiagram,
    render,
-} from '@sriler/sequence';
+} from '@sriler/sequence-core';
 import { Canvas } from 'canvas';
 import { HttpError } from 'http-errors';
 import { newError, newSuccess, Result } from './error';

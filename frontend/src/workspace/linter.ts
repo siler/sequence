@@ -1,6 +1,11 @@
 import { Diagnostic, linter, LintSource } from '@codemirror/lint';
 import { EditorView } from '@codemirror/view';
-import { Error, Failure, ParsedDiagram, parseDiagram } from '@sriler/sequence';
+import {
+   Error,
+   Failure,
+   ParsedDiagram,
+   parseDiagram,
+} from '@sriler/sequence-core';
 
 export type OnParse = { (content: ParsedDiagram): void };
 export type OnError = { (error: Error | Failure): void };

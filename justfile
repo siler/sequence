@@ -4,21 +4,21 @@ default:
 
 # remove build data
 clean:
-    just sequence/clean
+    just core/clean
     just frontend/clean
     just server/clean
 
 # clean and remove node_modules
 purge:
     rm -rf ./node_modules
-    just sequence/purge
+    just core/purge
     just frontend/purge
     just server/purge
 
 # format everything
 fmt:
     npx prettier --write package.json .prettierrc
-    just sequence/fmt
+    just core/fmt
     just frontend/fmt
     just server/fmt
 
@@ -28,13 +28,13 @@ generate:
 
 # execute all tests
 test:
-    just sequence/test
+    just core/test
     just frontend/test
     just server/test
 
 # build everything
 build:
-    just sequence/build
+    just core/build
     just frontend/build
     just server/build
 
@@ -45,15 +45,15 @@ release: clean generate test build
 server:
     npx -w server nodemon src/app.ts
 
-# rebuild sequence and the frontend for serving
+# rebuild core and the frontend for serving
 rebuild:
-    just sequence/build
+    just core/build
     just frontend/build
 
-# build a realize docker image 
+# build a sequence docker image 
 image:
-    docker build -t realize .
+    docker build -t sequence .
 
-# run the latest realize image
+# run the latest sequence image
 container:
-    docker run -d -p 3000:3000 realize
+    docker run -d -p 3000:3000 sequence

@@ -18,7 +18,7 @@
 
 # Bugs
 
--  fix bug where self-signal label extending to the right of a diagram is unaccounted for and cut off. sequence.
+-  fix bug where self-signal label extending to the right of a diagram is unaccounted for and cut off. core.
 -  blue focus ring for div with tabindex of -1, cannot be disabled with focus:ring-0. tailwindcss forms.
 
 # Done
