@@ -4,7 +4,7 @@ import {
 } from '@heroicons/react/outline';
 import React, { useMemo, useState } from 'react';
 import CopyToClipboard from 'react-copy-to-clipboard';
-import { Button } from '../components';
+import { Button } from './Button';
 
 export interface CopyButtonProps {
    data: string;

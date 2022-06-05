@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Button } from '../components';
+import { Button } from './Button';
 
 export interface DownloadPngProps {
    canvas: HTMLCanvasElement | null;

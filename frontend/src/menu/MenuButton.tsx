@@ -17,7 +17,7 @@ export const MenuButton = ({ dispatch, open }: MenuButtonProps) => {
       'transition',
       'rounded-full',
       'shadow',
-      'shadow-black/50',
+      'shadow-black/70',
       'bg-indigo-500',
       'text-white',
       'cursor-pointer',

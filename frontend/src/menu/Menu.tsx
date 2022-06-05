@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import React, { FocusEvent, useEffect, useRef, useState } from 'react';
-import { Button } from '../components';
+import { Button } from './Button';
 import { dispatchFn, setMenuOpen } from '../state';
 import { encode } from '../urlCode';
 import { CopyButton } from './CopyButton';
@@ -68,7 +68,7 @@ export const Menu: React.FC<MenuProps> = ({
       'bg-indigo-500',
       'text-white',
       'shadow',
-      'shadow-black/50',
+      'shadow-black/70',
       'rounded-bl-xl',
       'grid',
       'grid-cols-2',

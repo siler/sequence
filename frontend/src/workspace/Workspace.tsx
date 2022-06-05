@@ -37,10 +37,10 @@ export const Workspace = ({
          minSize={200}
          expandToMin={true}
       >
-         <div className="screen-window-height overflow-auto shadow shadow-black/50">
+         <div className="screen-window-height overflow-auto shadow shadow-black/70">
             <Editor dispatch={dispatch} text={text} />
          </div>
-         <div className="screen-window-height overflow-auto shadow shadow-black/50">
+         <div className="screen-window-height overflow-auto shadow shadow-black/70">
             <canvas ref={canvas} />
          </div>
       </Split>
