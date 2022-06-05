@@ -15,7 +15,6 @@
 -  change delay syntax to an attribute
 -  add indentation support to editor
 -  modify parser to collect warnings and resume after errors
--  handle vertical vs horizontal orientations
 
 # Bugs
 
@@ -26,3 +25,4 @@
 
 -  build home page layout
 -  build 404 page
+-  handle vertical vs horizontal orientations
