@@ -1,13 +1,13 @@
 import clsx from 'clsx';
 import React, { FocusEvent, useEffect, useRef, useState } from 'react';
 import { Button } from './Button';
-import { dispatchFn, setMenuOpen } from '../state';
+import { MenuDispatchFn, setMenuOpen } from './actions';
 import { encode } from '../urlCode';
 import { CopyButton } from './CopyButton';
 import { DownloadPng } from './DownloadPngButton';
 
 interface MenuProps {
-   dispatch: dispatchFn;
+   dispatch: MenuDispatchFn;
    open: boolean;
    code: string;
    canvas: HTMLCanvasElement | null;
@@ -61,8 +61,8 @@ export const Menu: React.FC<MenuProps> = ({
 
    const always = [
       'fixed',
-      'top-2',
-      'right-2',
+      'top-0',
+      'right-0',
       'w-60',
       'transition',
       'bg-indigo-500',

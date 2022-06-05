@@ -6,7 +6,6 @@ import {
    ViewUpdate,
 } from '@codemirror/view';
 import { debounce } from '../debounce';
-import './Editor.css';
 
 export type OnEditorUpdate = { (content: string): void };
 

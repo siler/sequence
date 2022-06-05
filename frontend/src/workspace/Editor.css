@@ -1,5 +1,0 @@
-/* The editor can be styled this way or dynamically through script */
-/* For theming/layout, CSS is fine.  */
-.cm-editor {
-    height: calc(100vh - 1rem);
-}

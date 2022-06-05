@@ -3,26 +3,36 @@ import Split from 'react-split';
 import { Editor } from './Editor';
 import { ParsedDiagram } from '@sriler/sequence';
 import { drawDiagram } from '../diagram';
-import { dispatchFn } from '../state';
+import { workspaceDispatchFn } from './actions';
 import './Workspace.css';
+import clsx from 'clsx';
+import { Extension } from '@codemirror/state';
 
 export interface WorkspaceProps {
-   dispatch: dispatchFn;
+   dispatch: workspaceDispatchFn;
    text: string;
    diagram: ParsedDiagram;
    canvas: React.MutableRefObject<HTMLCanvasElement | null>;
+   extensions?: Extension[];
+   firstSplitPercent?: number;
+   classes?: string[];
+   inset?: boolean;
 }
 
 /**
  * component for the seq workspace
  *
- * includes a primary workspace split between an editor and a renderer.
+ * a workspace split between an editor and a renderer.
  */
 export const Workspace = ({
    dispatch,
    text,
    diagram,
    canvas,
+   extensions,
+   firstSplitPercent,
+   classes,
+   inset,
 }: WorkspaceProps) => {
    useEffect(() => {
       if (canvas.current) {
@@ -30,17 +40,37 @@ export const Workspace = ({
       }
    }, [diagram, canvas]);
 
+   const first = firstSplitPercent ? firstSplitPercent : 30;
+   const second = 100 - first;
+
+   const both = ['overflow-auto'];
+   const editorClasses = clsx(
+      both,
+      classes,
+      'bg-white',
+      inset && ['border-t-2', 'border-l-2', 'border-b-2']
+   );
+   const canvasClasses = clsx(
+      both,
+      classes,
+      'flex',
+      'justify-center',
+      'items-center',
+      inset && ['border-t-2', 'border-r-2', 'border-b-2']
+   );
+
    return (
       <Split
-         sizes={[30, 70]}
-         className="flex flex-row bg-white"
+         sizes={[first, second]}
+         className="flex flex-row"
+         gutterSize={4}
          minSize={200}
          expandToMin={true}
       >
-         <div className="screen-window-height overflow-auto shadow shadow-black/70">
-            <Editor dispatch={dispatch} text={text} />
+         <div className={editorClasses}>
+            <Editor dispatch={dispatch} text={text} extensions={extensions} />
          </div>
-         <div className="screen-window-height overflow-auto shadow shadow-black/70">
+         <div className={canvasClasses}>
             <canvas ref={canvas} />
          </div>
       </Split>

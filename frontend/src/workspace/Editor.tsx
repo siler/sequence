@@ -1,23 +1,23 @@
-import { Compartment, EditorState } from '@codemirror/state';
+import { Compartment, EditorState, Extension } from '@codemirror/state';
 import { EditorView, keymap } from '@codemirror/view';
 import { basicSetup } from '@codemirror/basic-setup';
 import { indentWithTab } from '@codemirror/commands';
 import { useEffect, useMemo, useRef } from 'react';
 import { sequence } from '../syntax';
-import { dispatchFn, setCode, setDiagram } from '../state';
 import { ParsedDiagram } from '@sriler/sequence';
-import './Editor.css';
 import { newUpdateNotifier } from './notifier';
+import { workspaceDispatchFn, setCode, setDiagram } from './actions';
 
 export type EditorProps = {
-   dispatch: dispatchFn;
+   dispatch: workspaceDispatchFn;
    text: string;
+   extensions?: Extension[];
 };
 
 /**
  * component for the sequence editor
  */
-export const Editor = ({ dispatch, text }: EditorProps) => {
+export const Editor = ({ dispatch, text, extensions }: EditorProps) => {
    const notifier = useMemo(
       () => newUpdateNotifier([(code: string) => dispatch(setCode(code))]),
       [dispatch]
@@ -26,21 +26,27 @@ export const Editor = ({ dispatch, text }: EditorProps) => {
    const editorState = useMemo(() => {
       const languageConf = new Compartment();
 
+      let configured = [
+         basicSetup,
+         notifier,
+         languageConf.of(
+            sequence(
+               (diagram: ParsedDiagram) => dispatch(setDiagram(diagram)),
+               (error) => {
+                  console.log(error);
+               }
+            )
+         ),
+         keymap.of([indentWithTab]),
+      ];
+
+      if (extensions) {
+         configured = configured.concat(...extensions);
+      }
+
       return EditorState.create({
          doc: text,
-         extensions: [
-            basicSetup,
-            notifier,
-            languageConf.of(
-               sequence(
-                  (diagram: ParsedDiagram) => dispatch(setDiagram(diagram)),
-                  (error) => {
-                     console.log(error);
-                  }
-               )
-            ),
-            keymap.of([indentWithTab]),
-         ],
+         extensions: configured,
       });
 
       // text is omitted here because we don't want to recreate
@@ -48,7 +54,7 @@ export const Editor = ({ dispatch, text }: EditorProps) => {
       // is the source of truth for these changes, we can leave
       // it be.
       // eslint-disable-next-line react-hooks/exhaustive-deps
-   }, [notifier]);
+   }, [notifier, extensions]);
 
    // then set up the view
    const parent = useRef<HTMLDivElement | null>(null);
@@ -64,6 +70,7 @@ export const Editor = ({ dispatch, text }: EditorProps) => {
       });
 
       return () => {
+         console.log('destroying view');
          view.destroy();
       };
    }, [editorState, parent]);

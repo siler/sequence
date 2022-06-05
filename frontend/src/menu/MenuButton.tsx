@@ -1,9 +1,9 @@
-import { ChevronRightIcon, ChevronLeftIcon } from '@heroicons/react/solid';
 import clsx from 'clsx';
-import { dispatchFn, setMenuOpen } from '../state';
+import { ChevronRightIcon, ChevronLeftIcon } from '@heroicons/react/solid';
+import { MenuDispatchFn, setMenuOpen } from './actions';
 
 export interface MenuButtonProps {
-   dispatch: dispatchFn;
+   dispatch: MenuDispatchFn;
    open: boolean;
 }
 

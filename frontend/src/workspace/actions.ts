@@ -1,16 +1,7 @@
 import { ParsedDiagram } from '@sriler/sequence';
 
-export type Action = SetMenuOpen | SetCode | SetDiagram;
-
-export interface SetMenuOpen {
-   readonly type: 'setMenuOpen';
-   readonly open: boolean;
-}
-
-export const setMenuOpen = (open: boolean): SetMenuOpen => ({
-   type: 'setMenuOpen',
-   open,
-});
+export type workspaceDispatchFn = (action: WorkspaceActions) => void;
+export type WorkspaceActions = SetCode | SetDiagram;
 
 export interface SetCode {
    readonly type: 'setCode';
