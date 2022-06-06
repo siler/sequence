@@ -1,6 +1,6 @@
-# Server, does work
+# Server
 
-Server is responsible for turning render links into images and returning them.
+The server is responsible for hosting the React app and turning render links into images.
 
 # Commands
 

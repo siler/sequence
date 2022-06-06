@@ -1,4 +1,4 @@
-# Frontend, a face
+# Frontend
 
 A React application which aims to create a pleasant editing experience for sequence diagrams.
 
