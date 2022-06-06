@@ -4,9 +4,10 @@ Sequence is a sequence diagramming tool similar to WebSequenceDiagrams.
 
 # Commands
 
-This package is the root package of an `npm workspace`. NPM commands that interact with dependencies like `npm install` or `npm update` should be run from the root directory.
+This package is the root package of an [`npm workspace`](https://docs.npmjs.com/cli/v8/using-npm/workspaces). NPM commands that interact with dependencies like `npm install` or `npm update` should be run from the root directory. Use the `-w <packageName>` option to target specific packages. For example, to install Express for the server package run `npm -w server install express`.
+
 To create a new package, run `npm init -w <packageName>`.
-All other task running (builds, cleaning, etc.) is done with [just](https://github.com/casey/just). Run `just`, or `just <package>` for more commands lists.
+All other tasks (builds, cleaning, etc.) are run with [just](https://github.com/casey/just). Run `just`, or `just <package>` for commands lists with descriptions, or look at the `justfile`s.
 
 ## Workflows
 

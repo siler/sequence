@@ -1,9 +1,8 @@
 import clsx from 'clsx';
-import React from 'react';
-import { ReactNode } from 'react';
+import React, { ReactNode } from 'react';
 
 export interface ButtonProps {
-   children: ReactNode;
+   children: ReactNode[] | ReactNode;
    onClick?: () => void;
    classes?: string[];
 }
@@ -28,7 +27,6 @@ export const Button: React.FC<ButtonProps> = ({
       'select-none',
       'flex',
       'flex-row',
-      'justify-around',
       classes
    );
    return (

@@ -15,6 +15,7 @@
    "devDependencies": {
       "@types/cors": "^2.8.12",
       "@types/http-errors": "^1.8.2",
+      "@types/yargs": "^17.0.10",
       "nodemon": "^2.0.16"
    }
 }

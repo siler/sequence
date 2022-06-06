@@ -1,10 +1,10 @@
 import clsx from 'clsx';
-import React, { FocusEvent, useEffect, useRef, useState } from 'react';
+import React, { FocusEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { encode } from '../urlCode';
 import { MenuDispatchFn, setMenuOpen } from './actions';
-import { Button } from './Button';
 import { CopyButton } from './CopyButton';
 import { DownloadPng } from './DownloadPngButton';
+import { OnBlurToggle } from './OnBlurToggle';
 
 interface MenuProps {
    dispatch: MenuDispatchFn;
@@ -39,27 +39,14 @@ export const Menu: React.FC<MenuProps> = ({
       }
    }, [code, open]);
 
-   let toggleOnBlurEnabled;
-   if (process.env.NODE_ENV === 'development') {
-      const text = onBlurEnabled ? 'onBlur Enabled' : 'onBlur Disabled';
-      toggleOnBlurEnabled = (
-         <Button
-            classes={['col-span-2']}
-            onClick={() => setOnBlurEnabled(!onBlurEnabled)}
-         >
-            <span>{text}</span>
-         </Button>
-      );
-   }
-
-   const onBlur = (event: FocusEvent) => {
+   const onBlur = useCallback((event: FocusEvent) => {
       if (
          onBlurEnabled &&
          !menu.current?.contains(event.relatedTarget as HTMLElement)
       ) {
          dispatch(setMenuOpen(false));
       }
-   };
+   }, [menu, onBlurEnabled, dispatch])
 
    const always = [
       'fixed',
@@ -84,20 +71,17 @@ export const Menu: React.FC<MenuProps> = ({
       open ? 'translate-x-0' : 'translate-x-64',
       always
    );
-   const labelClasses = 'text-lg pl-2 pr-2 text-right self-center';
    return (
       <div ref={menu} className={menuClasses} tabIndex={-1} onBlur={onBlur}>
-         <h1 className="col-span-2 text-center text-3xl m-2 pb-1 border-b-2 border-white">
-            Menu
-         </h1>
-         <span className={labelClasses}>Edit link:</span>
-         <CopyButton data={`http://${window.location.host}/edit/${encoded}`} />
-         <span className={labelClasses}>Src link:</span>
-         <CopyButton
-            data={`http://${window.location.host}/render/${encoded}`}
-         />
+         <h1 className="col-span-2 text-center text-3xl m-2 pb-1 ">Menu</h1>
+         <CopyButton data={`${window.location.origin}/edit/${encoded}`}>
+            Copy Edit Link
+         </CopyButton>
+         <CopyButton data={`${window.location.origin}/render/${encoded}`}>
+            Copy Image Link
+         </CopyButton>
          <DownloadPng canvas={canvas} open={open} title={title} />
-         {toggleOnBlurEnabled}
+         <OnBlurToggle enabled={onBlurEnabled} setEnabled={setOnBlurEnabled} />
       </div>
    );
 };

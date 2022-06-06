@@ -38,7 +38,7 @@ export const DownloadPng: React.FC<DownloadPngProps> = ({
 
    return (
       <a className={'col-span-2'} download={filename} href={url}>
-         <Button>
+         <Button classes={['justify-around']}>
             <span>Download .png</span>
          </Button>
       </a>
