@@ -9,7 +9,7 @@ import { Workspace, WorkspaceActions } from './workspace';
 const niceDiagram =
    '/edit/1H4sIAAk5nWIAA22SvY7CMBCEez_FSDRQpLmSItL9SHflSZxEvcQbssLYyDage_vbJCSQC1Kq9eeZnYkXePUIpyzBk0OW7NgssBXnQC4F7BjnxBaUUItjT0c2HbXGV7jiJ9iAT87YhnhIRq9-U8xSyYl8TqDIcJKyCoiH4zorkQOi7JuMEC1HLHMjCfoNW6zM6a6hNucj-enoLYZr4jgdbjhe_s_eqWp4OvqgTDtK3O66kb36JVTBe64yHkA9dVKzE8_JdCugKEdjwNGO3Rp7jZ61g4masg1dGFbqmiP7jIN4mxQJtaqqIshrpbFVMzdNFEVRPnGo2gg4StJ2R7Qc0j4u0v4LY_qDFunDz4lurnZzkd7lrjB2NReZxh2eimVHv2zNcLF1Wb6sZkZ9ZYPRs2J74t5NeXsHI0DwUnHH_QFNb3y6xAIAAA';
 const someNonsense =
-   '/render/1H4sIAEjpm2IAA12QTU7DQAyF9z7F29EsglQQmyxS9RrdOcRpRp3MVInVQE-PPZCC2Hh-_Pw92xo0SoN8wSoY-SaIYdA8DM9EV541vIcrJ22wjJyEqByoW9wJiNxJbDBxL9AxLET3umXiurXY-XWTRNGnBX3GOrKaVuCqjn7SKouGdEYYSm7Nc-xhPNPwphknw6M29l9vtzUlOEE-dJZJ4idiNlYRYMgzUsY55x6z8JITrAGO0eYrvdSFKDeZiTy6w25flUaLYWvPlwo2y-Z5gmYcibrv4t3-rUL3mz4ctjorS-IYj-Xn9d-P1TmmNTyxnTtD-XQP2NG9TpY0p8cq8sXfvuUvjjPDR78BAAA';
+   '/1H4sIACCDnWIAA12QsW7DMAxEd37FbbUHF0iLLh4c5Dey0TUdC1HEwBZiIF9fUq3TIAtlkXfvROeQo7TQM1bBxDdBDGPWcXwnuvKcw3e4csotlomTEJUDTYc7AZF7iS0uPAjyFBaie9MxcdNZ7f1zk0TJbwsGxTpxNq3AVT39jbMsOaQTwlhmq85xgPFMw5tmuhgejbGfsz3WlGBENUDpYtQZSXFSHTALL5psm5LcFL_cZCby6rxqV5dnFXxn148a9vIt4YisOBD1v-Zq91Wj_x_v95vPbEkc47V0Pl865nNMZ3hiOytD-S4P2MGzjja0pMfieva7_9MfFs7G4a0BAAA';
 
 export const Home = () => {
    const canvas = useRef<HTMLCanvasElement | null>(null);
@@ -25,23 +25,6 @@ Browser --> You
   label: diagram`);
    const [diagram, setDiagram] = useState(newEmptyDiagram());
    const [url, setUrl] = useState('');
-
-   const dispatch = useCallback(
-      (action: WorkspaceActions) => {
-         switch (action.type) {
-            case 'setCode':
-               setText(action.code);
-               break;
-            case 'setDiagram':
-               setDiagram(action.diagram);
-               break;
-            default:
-               const _exhaustiveCheck: never = action;
-               return _exhaustiveCheck;
-         }
-      },
-      [setText, setDiagram]
-   );
 
    const extensions = useMemo(() => {
       return [
@@ -60,6 +43,30 @@ Browser --> You
 
       return diagram.title + '.png';
    }, [diagram.title]);
+
+   const renderNonsense = useMemo(
+      () => window.location.origin + '/render' + someNonsense,
+      []
+   );
+
+   const editNonsense = useMemo(() => '/edit' + someNonsense, []);
+
+   const dispatch = useCallback(
+      (action: WorkspaceActions) => {
+         switch (action.type) {
+            case 'setCode':
+               setText(action.code);
+               break;
+            case 'setDiagram':
+               setDiagram(action.diagram);
+               break;
+            default:
+               const _exhaustiveCheck: never = action;
+               return _exhaustiveCheck;
+         }
+      },
+      [setText, setDiagram]
+   );
 
    useEffect(() => {
       if (!canvas.current) {
@@ -129,9 +136,15 @@ Browser --> You
          <p>
             Image links take the caller to Sequence's diagram rendering service
             and gives them a brand new image. These links can be embedded as the{' '}
-            <Code>src</Code> attribute in an <Code>img</Code> element. Have{' '}
-            <TextLink to={someNonsense}>some nonsense</TextLink> as an example.
+            <Code>src</Code> attribute in an <Code>img</Code> element:
          </p>
+         <Link to={editNonsense}>
+            <img
+               src={renderNonsense}
+               alt="a nonsense sequence diagram"
+               className="shadow shadow-black/70"
+            />
+         </Link>
          <h2>Contributing</h2>
          <p>
             Any contributions, including bug reports, will soon be welcomed at

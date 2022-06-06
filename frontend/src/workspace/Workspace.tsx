@@ -68,9 +68,6 @@ export const Workspace = ({
    const canvasClasses = clsx(
       classes,
       bothClasses,
-      'flex',
-      'justify-center',
-      'items-center',
       inset && [
          'border-r-2',
          'border-b-2',
@@ -96,7 +93,7 @@ export const Workspace = ({
             <Editor dispatch={dispatch} text={text} extensions={extensions} />
          </div>
          <div className={canvasClasses}>
-            <canvas ref={canvas} />
+            <canvas className="mx-auto" ref={canvas} />
          </div>
       </Split>
    );
