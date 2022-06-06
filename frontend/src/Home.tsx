@@ -147,8 +147,11 @@ Browser --> You
          </Link>
          <h2>Contributing</h2>
          <p>
-            Any contributions, including bug reports, will soon be welcomed at
-            the public GitHub repository for Sequence.
+            Any contributions, including bug reports, are welcomed at the{' '}
+            <a href="https://github.com/siler/sequence">
+               <LinkSpan>GitHub repository</LinkSpan>
+            </a>
+            .
          </p>
       </Article>
    );
