@@ -32,9 +32,7 @@ export const Editor = ({ dispatch, text, extensions }: EditorProps) => {
          languageConf.of(
             sequence(
                (diagram: ParsedDiagram) => dispatch(setDiagram(diagram)),
-               (error) => {
-                  console.log(error);
-               }
+               (error) => {}
             )
          ),
          keymap.of([indentWithTab]),

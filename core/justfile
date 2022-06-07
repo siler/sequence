@@ -24,3 +24,6 @@ build:
 
 # mint a fancy new build of core
 release: clean test build 
+
+watch:
+    npx chokidar "src/**/*.ts" -c "tsc"

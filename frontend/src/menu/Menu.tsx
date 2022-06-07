@@ -66,11 +66,13 @@ export const Menu: React.FC<MenuProps> = ({
       'focus:ring-offset-0',
       'focus:outline-none',
    ];
+
    const menuClasses = clsx(
       classes,
       open ? 'translate-x-0' : 'translate-x-64',
       always
    );
+
    return (
       <div ref={menu} className={menuClasses} tabIndex={-1} onBlur={onBlur}>
          <h1 className="col-span-2 text-center text-3xl m-2 pb-1 ">Menu</h1>

@@ -22,17 +22,23 @@ const makeSource = (onParse: OnParse, OnError: OnError): LintSource => {
       OnError(result.reason);
 
       const cause = (error: Error | Failure): string => {
+         let message;
          if (error.cause) {
-            return cause(error.cause) + `: ${error.description}`;
+            message = error.description;
+         } else {
+            message = 'caused by ' + error.description;
          }
 
-         return `caused by ${error.description}`;
+         if (error.cause) {
+            return message + '\n' + cause(error.cause);
+         }
+
+         return message;
       };
 
       const message = cause(result.reason);
       let from = result.reason.ctx.index;
 
-      // this is pretty cludgy for an error at the end of the file
       if (from >= code.length) {
          from = code.length - 1;
       }

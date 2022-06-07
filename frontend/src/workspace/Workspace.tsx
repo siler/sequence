@@ -3,7 +3,7 @@ import { ParsedDiagram } from '@sriler/sequence-core';
 import clsx from 'clsx';
 import React, { useEffect, useState } from 'react';
 import Split from 'react-split';
-import { drawDiagram } from '../diagram';
+import { draw } from '../diagram';
 import { useOrientation } from '../orientation';
 import { workspaceDispatchFn } from './actions';
 import { Editor } from './Editor';
@@ -37,7 +37,7 @@ export const Workspace = ({
 }: WorkspaceProps) => {
    useEffect(() => {
       if (canvas.current) {
-         drawDiagram(diagram, canvas.current, 1);
+         draw(diagram, canvas.current, 1);
       }
    }, [diagram, canvas]);
 
@@ -58,6 +58,7 @@ export const Workspace = ({
    const editorClasses = clsx(
       classes,
       bothClasses,
+      'z-10',
       'bg-white',
       inset && [
          'border-t-2',
@@ -68,6 +69,7 @@ export const Workspace = ({
    const canvasClasses = clsx(
       classes,
       bothClasses,
+      'z-0',
       inset && [
          'border-r-2',
          'border-b-2',

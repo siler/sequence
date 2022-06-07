@@ -4,11 +4,15 @@ import { MenuDispatchFn, setMenuOpen } from './actions';
 
 export interface MenuButtonProps {
    dispatch: MenuDispatchFn;
-   open: boolean;
+   menuOpen: boolean;
    classes: string[];
 }
 
-export const MenuButton = ({ dispatch, open, classes }: MenuButtonProps) => {
+export const MenuButton = ({
+   dispatch,
+   menuOpen,
+   classes,
+}: MenuButtonProps) => {
    const always = [
       'fixed',
       'top-0',
@@ -31,8 +35,9 @@ export const MenuButton = ({ dispatch, open, classes }: MenuButtonProps) => {
       'hover:opacity-100',
       'hover:scale-125',
    ];
+
    const className = clsx(
-      open
+      menuOpen
          ? ['opacity-0', 'translate-x-16']
          : ['opacity-[.33]', 'translate-x-0'],
       classes,
@@ -43,10 +48,10 @@ export const MenuButton = ({ dispatch, open, classes }: MenuButtonProps) => {
       <div
          className={className}
          onClick={() => {
-            dispatch(setMenuOpen(!open));
+            dispatch(setMenuOpen(!menuOpen));
          }}
       >
-         {open ? <ChevronRightIcon /> : <ChevronLeftIcon />}
+         {menuOpen ? <ChevronRightIcon /> : <ChevronLeftIcon />}
       </div>
    );
 };

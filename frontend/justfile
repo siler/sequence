@@ -33,6 +33,9 @@ release: clean generate test build
 start:
     npx react-scripts start
 
+watch:
+    npx chokidar "src/**/*" -c "react-scripts build"
+
 # eject from Create React App
 eject:
     npx react-scripts eject

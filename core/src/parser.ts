@@ -1,15 +1,15 @@
 import {
-   any,
    clean,
+   context,
    discard,
    eof,
+   expect,
    fail,
    Failure,
    filterNull,
    many,
    manyZero,
    map,
-   must,
    optional,
    pair,
    preceded,
@@ -65,7 +65,7 @@ export interface ParseFailure {
 
 // parse a SequenceDiagram from a string
 export const parseDiagram = (code: string): ParseResult => {
-   if (code.slice(-1) != '\n') {
+   if (code.slice(-1) !== '\n') {
       code += '\n';
    }
 
@@ -87,57 +87,92 @@ const simpleParticipant = regex(/[a-zA-Z0-9]+/g, 'participant name');
 /**
  * consumes a space, tab, or newline
  */
-const ws = regex(/[ \t\n]+/g, 'ws');
+const ws = regex(/[ \t]+/g, 'ws');
+
+/**
+ * consumes a space, tab, or newline
+ */
+const wsZero = regex(/[ \t]*/g, 'zero or more ws');
+
+/**
+ * consumes a space, tab, or newline
+ */
+const nl = str('\n');
 
 /**
  * consumes from a comment marker to a newline, discarding the contents
  */
-const comment = discard(
-   sequence([str('#'), regex(/[^\n]*/g, 'many not newline')])
-);
+const comment = discard(sequence([str('#'), regex(/[^\n]*/g, 'comment')]));
 
 /**
  * consumes input until a comment or newline
  */
-const restOfLine = regex(/[^#^\n]*/g, 'not comment or newline');
+const lineContent = regex(/[^#^\n]*/g, 'line content');
 
 /**
- * skips one or more whitespace or comments, discarding them
+ * skips zero or more whitespaces, discarding them
+ *
+ * used between tokens on a line command
+ *
  */
-const skip = discard(many(any([ws, comment])));
+const skipWsZero = discard(wsZero);
 
 /**
- * skips zero or more whitespace or comments, discarding them
+ * skips whitespace then comment up to and including a newline
+ *
+ * used to terminate lines
  */
-const skipZero = discard(manyZero(any([ws, comment])));
+const skipLine = discard(
+   sequence([skipWsZero, discard(optional(comment)), discard(nl)])
+);
+
+/**
+ * skips skips one or more lines of whitespace and comments
+ *
+ * used between lines
+ */
+const skipLines = discard(many(skipLine));
+
+/**
+ * skips zero or more lines of whitespace and comments
+ *
+ * used between lines
+ */
+const skipLinesZero = discard(manyZero(skipLine));
+
+/**
+ * parses a line with the tag then a colon then the captured text
+ */
+const taggedLine = (tag: string) =>
+   context(
+      map(
+         clean(
+            sequence([
+               skipWsZero,
+               discard(str(tag)),
+               skipWsZero,
+               expect(discard(str(':')), tag + ' separator'),
+               skipWsZero,
+               expect(lineContent, tag + ' content'),
+               expect(discard(skipLines), 'end of line'),
+            ])
+         ),
+         ([line]) => line
+      ),
+      'expected ' + tag
+   );
 
 /**
  * parses a title
  */
-const title = map(
-   clean(
-      sequence([
-         discard(str('title:')),
-         skipZero,
-         must(restOfLine, 'expected title content'),
-      ])
-   ),
-   ([title]) => title
-);
+const titleLine = taggedLine('title');
 
 /**
  * parses out the participant name and creates a Participant
  */
-const participant = map(
-   clean(
-      sequence([
-         discard(str('participant:')),
-         skip,
-         must(simpleParticipant, 'expected participant name'),
-      ])
-   ),
-   ([name]) => ({ name })
-);
+const participantLine = map(taggedLine('participant'), (name) => ({
+   name,
+}));
 
 /**
  * parses a string containing the extra characters
@@ -148,7 +183,7 @@ const arrow = map(
          discard(str('-')),
          optional(str('-')),
          optional(str('-')),
-         discard(str('>')),
+         expect(discard(str('>')), 'arrowhead'),
          optional(str('>')),
       ])
    ),
@@ -162,8 +197,10 @@ const delay = map(
    clean(
       sequence([
          discard(str('(')),
-         regex(/[0-9]+(\.[0-9]*)?/g, 'number'),
-         discard(str(')')),
+         discard(skipWsZero),
+         expect(regex(/[0-9]+(\.[0-9]*)?/g, 'number'), 'value'),
+         discard(skipWsZero),
+         expect(discard(str(')')), 'closing delimiter'),
       ])
    ),
    ([delay]) => delay
@@ -172,15 +209,18 @@ const delay = map(
 /**
  * parses out a message's participants as from and to
  */
-const fromTo = map(
+const fromToLine = map(
    filterNull(
       sequence([
+         skipWsZero,
          simpleParticipant,
-         skipZero,
-         must(arrow, 'expected signal arrow'),
+         skipWsZero,
+         expect(arrow, 'arrow'),
+         skipWsZero,
          optional(delay),
-         skipZero,
-         must(simpleParticipant, 'expected signal "to" participant'),
+         skipWsZero,
+         expect(simpleParticipant, 'destination participant alias'),
+         expect(discard(skipLines), 'end of line'),
       ])
    ),
    ([from, arrow, delay, to]) => ({
@@ -197,41 +237,30 @@ const fromTo = map(
 /**
  * parses a message label as a string
  */
-const label = map(
-   clean(
-      sequence([
-         discard(str('label:')),
-         skipZero,
-         must(restOfLine, 'expected label content'),
-      ])
-   ),
-   ([label]) => label
-);
+const labelLine = taggedLine('label');
 
 /**
  * assembles a message from fromTo and label
  */
-const message = map(
-   pair(terminated(fromTo, skip), optional(label)),
-   ({ first: { from, to, arrow, delay }, second: label }) =>
-      processMessage(from, to, arrow, delay, label)
+const messageLines = context(
+   map(
+      pair(fromToLine, optional(labelLine)),
+      ({ first: { from, to, arrow, delay }, second: label }) =>
+         processMessage(from, to, arrow, delay, label)
+   ),
+   'expected signal'
 );
 
 /**
- * parse zero or more participants and zero or more messages into a diagram
+ * parse a diagram from a title, participants, and messages
  */
 const diagram = map(
    terminated(
       pair(
-         preceded(skipZero, optional(title)),
-         pair(
-            // participants must come before messages
-            clean(manyZero(any([participant, skip]))),
-            // messages terminated with an empty eof line
-            clean(manyZero(any([message, skip])))
-         )
+         preceded(skipLinesZero, optional(titleLine)),
+         pair(manyZero(participantLine), manyZero(messageLines))
       ),
-      must(eof(), 'expected signal')
+      eof()
    ),
    ({ first: title, second: { first: participants, second: messages } }) =>
       makeDiagram(participants, messages, title)
@@ -307,6 +336,6 @@ const processMessage = (
       label,
       arrow,
       line,
-      delay: delay,
+      delay,
    };
 };

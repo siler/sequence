@@ -45,7 +45,7 @@ export const App = () => {
       }
    }, [decodeFailed]);
 
-   const classes = [orientation === 'landscape' ? 'h-screen' : 'h-1/2', 'z-0'];
+   const classes = ['z-0', orientation === 'landscape' ? 'h-screen' : 'h-1/2'];
 
    return (
       <div>
@@ -59,7 +59,7 @@ export const App = () => {
          />
          <MenuButton
             dispatch={dispatch}
-            open={state.menuOpen}
+            menuOpen={state.menuOpen}
             classes={['z-10']}
          />
          <Workspace

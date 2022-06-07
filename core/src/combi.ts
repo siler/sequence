@@ -51,7 +51,7 @@ export interface ErrorContent {
 }
 
 /**
- * indicates a failed parse attempt
+ * indicates a non-fatal parsing error
  */
 export interface Error extends ErrorContent {
    readonly type: 'error';
@@ -79,7 +79,7 @@ export const fail = (error: Error, message?: string): Failure => {
 };
 
 /**
- * indicates a failed parse attempt
+ * indicates a failed parse attempt, terminating the parser
  */
 export interface Failure extends ErrorContent {
    readonly type: 'failure';
@@ -123,15 +123,29 @@ export const withContext = (
    }
 };
 
+export const context = <T>(parser: Parser<T>, context: string): Parser<T> => {
+   return (ctx) => {
+      const res = parser(ctx);
+      if (res.type === 'success') {
+         return res;
+      }
+
+      return withContext(res, context);
+   };
+};
+
 /**
  * causes any errors produced by the passed parser to be turned into failures
  */
-export const must = <T>(parser: Parser<T>, message: string): Parser<T> => {
+export const expect = <T>(
+   parser: Parser<T>,
+   expectation: string
+): Parser<T> => {
    return (ctx) => {
       const res = parser(ctx);
 
       if (res.type === 'error') {
-         return fail(res, message);
+         return fail(res, 'expected ' + expectation);
       }
 
       return res;
@@ -143,16 +157,16 @@ export const must = <T>(parser: Parser<T>, message: string): Parser<T> => {
  */
 export const str = (match: string): Parser<string> => {
    return (ctx) => {
-      const index = ctx.index + match.length;
-      if (index >= ctx.input.length) {
-         return newError(ctx, `failure to match str "${match}"`);
+      const end = ctx.index + match.length;
+      if (end > ctx.input.length) {
+         return newError(ctx, `failure to match "${match}", too short`);
       }
 
-      if (ctx.input.substring(ctx.index, index) === match) {
-         return newSuccess(withIndex(ctx, index), match);
+      if (ctx.input.substring(ctx.index, end) === match) {
+         return newSuccess(withIndex(ctx, end), match);
       }
 
-      return newError(ctx, `failed to match str "${match}"`);
+      return newError(ctx, `failure to match "${match}"`);
    };
 };
 
@@ -249,7 +263,8 @@ export const optional = <T>(parser: Parser<T>): Parser<T | undefined> => {
 /**
  * zero or more of parser, returns empty array if none
  *
- * note: failure of parser is considered success
+ * note: this parser is infallible unless a subparser runs
+ * and returns a failure
  */
 export const manyZero = <T>(parser: Parser<T>): Parser<T[]> => {
    return (ctx) => {
@@ -295,7 +310,7 @@ export const many = <T>(parser: Parser<T>): Parser<T[]> => {
       }
 
       if (values.length === 0) {
-         return newError(nextCtx, 'failure to match at least one in manyOne');
+         return newError(nextCtx, 'failure to match at least one');
       }
 
       return newSuccess(nextCtx, values);
@@ -476,6 +491,17 @@ export const map = <A, B>(parser: Parser<A>, fn: (val: A) => B): Parser<B> => {
          return withValue(res, fn(res.value));
       }
 
+      return res;
+   };
+};
+
+export const debug = <T>(parser: Parser<T>, context: string) => {
+   return (ctx: Context) => {
+      const res = parser(ctx);
+      console.log(context, res);
+      console.log({
+         buffer: res.ctx.input.slice(res.ctx.index, res.ctx.index + 20),
+      });
       return res;
    };
 };

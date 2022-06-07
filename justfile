@@ -41,14 +41,13 @@ build:
 # make a sparkly build of everything
 release: clean generate test build 
 
-# run a dev server which reloads on change
-server:
-    npx -w server nodemon src/app.ts
+# run the frontend while rebuilding as changes are made
+frontend:
+    npx concurrently "just core/watch" "just frontend/start"
 
-# rebuild core and the frontend for serving
-rebuild:
-    just core/build
-    just frontend/build
+# run the server while rebuilding as changes are made
+server:
+    npx concurrently "just core/watch" "just frontend/watch" "npx -w server nodemon src/app.ts"
 
 # build a sequence docker image 
 image:
