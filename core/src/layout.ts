@@ -84,7 +84,12 @@ export const layout = (
       titleExtent
    );
 
-   const signals = layoutSignals(lifelines, parsed.messages, measurer, style);
+   const [signals, centerRight] = layoutSignals(
+      lifelines,
+      parsed.messages,
+      measurer,
+      style
+   );
 
    const signalsHeight = signals
       .map((signal) => signal.box.height + signal.delayHeight)
@@ -93,13 +98,20 @@ export const layout = (
    const lifelineHeight =
       style.lifeline.margin.bottom + signalsHeight + style.signal.font.size;
 
-   const size = computeSize(lifelines, lifelineHeight, style, titleExtent);
+   const size = computeSize(
+      lifelines,
+      lifelineHeight,
+      centerRight,
+      style,
+      titleExtent
+   );
 
    return {
       title: parsed.title,
       lifelines,
       signals,
       lifelineHeight,
+      centerRight,
       size,
    };
 };
@@ -182,9 +194,9 @@ const layoutSignals = (
    messages: Message[],
    measurer: Measurer,
    style: Style
-): Signal[] => {
+): [Signal[], number] => {
    if (lifelines.length === 0 || messages.length === 0) {
-      return [];
+      return [[], 0];
    }
 
    const segments = generateSegments(lifelines);
@@ -200,7 +212,8 @@ const layoutSignals = (
 
    widenLifelines(lifelines, segments);
 
-   return createSignals(lifelines, messages, spans, style);
+   const centerRight = segments.slice(-1)[0].width;
+   return [createSignals(lifelines, messages, spans, style), centerRight];
 };
 
 const generateSegments = (lifelines: Lifeline[]): Segment[] => {
@@ -287,13 +300,18 @@ const messageSpan = (segments: Segment[], message: Message): Span => {
 const computeSize = (
    lifelines: Lifeline[],
    lifelineHeight: number,
+   centerRight: number,
    style: Style,
    titleBox: Box
 ): Extent => {
    const rightmost = lifelines.slice(-1)[0];
 
    if (rightmost) {
-      const diagramWidth = right(rightmost.box) + style.frame.padding.right;
+      const rightMost = Math.max(
+         right(rightmost.box),
+         centerX(rightmost.box) + centerRight
+      );
+      const diagramWidth = rightMost + style.frame.padding.right;
       const width = Math.max(
          titleBox.width + horizontal(style.frame.padding),
          diagramWidth

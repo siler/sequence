@@ -184,7 +184,7 @@ export const regex = (re: RegExp, expected: string): Parser<string> => {
          return newSuccess(withIndex(ctx, ctx.index + res[0].length), res[0]);
       }
 
-      return newError(ctx, `failure to match regex ${expected}`);
+      return newError(ctx, `failure to match ${expected}`);
    };
 };
 

@@ -8,6 +8,7 @@ export interface Diagram {
    readonly lifelines: Lifeline[];
    readonly signals: Signal[];
    readonly lifelineHeight: number;
+   readonly centerRight: number;
    readonly size: Extent;
 }
 

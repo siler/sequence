@@ -1,14 +1,11 @@
 import { completeFromList } from '@codemirror/autocomplete';
 import { LanguageSupport, LRLanguage } from '@codemirror/language';
 import { styleTags, tags as t } from '@lezer/highlight';
-import { makeLinter, OnError, OnParse } from '../workspace/linter';
 import { parser } from './gen';
+import { newLinter, OnParse } from './linter';
 
-export const sequence = (onParse: OnParse, onError: OnError) => {
-   return new LanguageSupport(seqLanguage, [
-      seqCompletion,
-      makeLinter(onParse, onError),
-   ]);
+export const sequence = (onParse: OnParse) => {
+   return new LanguageSupport(seqLanguage, [seqCompletion, newLinter(onParse)]);
 };
 
 const parserWithMetadata = parser.configure({
@@ -29,8 +26,8 @@ const seqLanguage = LRLanguage.define({
 
 const seqCompletion = seqLanguage.data.of({
    autocomplete: completeFromList([
-      { label: 'title', type: 'keyword' },
-      { label: 'participant', type: 'keyword' },
-      { label: 'label', type: 'keyword' },
+      { label: 'title' },
+      { label: 'participant' },
+      { label: 'label' },
    ]),
 });

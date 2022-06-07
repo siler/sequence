@@ -43,11 +43,11 @@ release: clean generate test build
 
 # run the frontend while rebuilding as changes are made
 frontend:
-    npx concurrently "just core/watch" "just frontend/start"
+    npx concurrently -k "just core/watch" "just frontend/start"
 
 # run the server while rebuilding as changes are made
 server:
-    npx concurrently "just core/watch" "just frontend/watch" "npx -w server nodemon src/app.ts"
+    npx concurrently -k "just core/watch" "just frontend/watch" "npx -w server nodemon src/app.ts"
 
 # build a sequence docker image 
 image:

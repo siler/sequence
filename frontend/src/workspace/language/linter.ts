@@ -8,9 +8,8 @@ import {
 } from '@sriler/sequence-core';
 
 export type OnParse = { (content: ParsedDiagram): void };
-export type OnError = { (error: Error | Failure): void };
 
-const makeSource = (onParse: OnParse, OnError: OnError): LintSource => {
+const makeSource = (onParse: OnParse): LintSource => {
    return (view: EditorView) => {
       const code = view.state.doc.toString();
       const result = parseDiagram(code);
@@ -19,21 +18,12 @@ const makeSource = (onParse: OnParse, OnError: OnError): LintSource => {
          return [];
       }
 
-      OnError(result.reason);
-
       const cause = (error: Error | Failure): string => {
-         let message;
          if (error.cause) {
-            message = error.description;
+            return error.description + '\n' + cause(error.cause);
          } else {
-            message = 'caused by ' + error.description;
+            return 'caused by ' + error.description;
          }
-
-         if (error.cause) {
-            return message + '\n' + cause(error.cause);
-         }
-
-         return message;
       };
 
       const message = cause(result.reason);
@@ -61,5 +51,5 @@ const makeSource = (onParse: OnParse, OnError: OnError): LintSource => {
    };
 };
 
-export const makeLinter = (onParse: OnParse, onError: OnError) =>
-   linter(makeSource(onParse, onError), { delay: 100 });
+export const newLinter = (onParse: OnParse) =>
+   linter(makeSource(onParse), { delay: 100 });

@@ -1,11 +1,11 @@
 import { basicSetup } from '@codemirror/basic-setup';
 import { indentWithTab } from '@codemirror/commands';
-import { Compartment, EditorState, Extension } from '@codemirror/state';
+import { EditorState, Extension } from '@codemirror/state';
 import { EditorView, keymap } from '@codemirror/view';
 import { ParsedDiagram } from '@sriler/sequence-core';
 import { useEffect, useMemo, useRef } from 'react';
-import { sequence } from '../syntax';
 import { setCode, setDiagram, workspaceDispatchFn } from './actions';
+import { sequence } from './language';
 import { newUpdateNotifier } from './notifier';
 
 export type EditorProps = {
@@ -24,18 +24,11 @@ export const Editor = ({ dispatch, text, extensions }: EditorProps) => {
    );
 
    const editorState = useMemo(() => {
-      const languageConf = new Compartment();
-
       let configured = [
          basicSetup,
-         notifier,
-         languageConf.of(
-            sequence(
-               (diagram: ParsedDiagram) => dispatch(setDiagram(diagram)),
-               (error) => {}
-            )
-         ),
          keymap.of([indentWithTab]),
+         notifier,
+         sequence((diagram: ParsedDiagram) => dispatch(setDiagram(diagram))),
       ];
 
       if (extensions) {
