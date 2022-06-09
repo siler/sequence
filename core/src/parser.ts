@@ -1,8 +1,8 @@
 import {
+   any,
    clean,
    context,
    discard,
-   eof,
    expect,
    fail,
    Failure,
@@ -11,12 +11,11 @@ import {
    manyZero,
    map,
    optional,
-   pair,
+   optionalDefault,
    preceded,
    regex,
    sequence,
    str,
-   terminated,
 } from './combi';
 
 // A parsed sequence diagram with ordered lists of participants and messages
@@ -36,12 +35,12 @@ export interface Participant {
    readonly name: string;
 }
 
-export type ArrowEnd = 'filled' | 'empty';
+export type ArrowHead = 'filled' | 'empty';
 export type LineStyle = 'solid' | 'dashed' | 'dotted';
 
 export interface MessageProperties {
    readonly label?: string;
-   readonly arrow: ArrowEnd;
+   readonly head: ArrowHead;
    readonly line: LineStyle;
    readonly delay: number;
 }
@@ -87,7 +86,7 @@ const simpleParticipant = regex(/[a-zA-Z0-9]+/g, 'participant name');
 /**
  * consumes a space, tab, or newline
  */
-const ws = regex(/[ \t]+/g, 'ws');
+// const ws = regex(/[ \t]+/g, 'ws');
 
 /**
  * consumes a space, tab, or newline
@@ -170,9 +169,17 @@ const titleLine = taggedLine('title');
 /**
  * parses out the participant name and creates a Participant
  */
-const participantLine = map(taggedLine('participant'), (name) => ({
-   name,
-}));
+const participantLine = map(
+   taggedLine('participant'),
+   (name): Participant => ({
+      name,
+   })
+);
+
+interface Arrow {
+   line: LineStyle;
+   head: ArrowHead;
+}
 
 /**
  * parses a string containing the extra characters
@@ -187,8 +194,21 @@ const arrow = map(
          optional(str('>')),
       ])
    ),
-   (strs) => strs.reduce((val, curr) => val + curr, '')
+   ([dashed, dotted, empty]): Arrow => ({
+      line: dotted ? 'dotted' : dashed ? 'dashed' : 'solid',
+      head: empty ? 'empty' : 'filled',
+   })
 );
+
+const parseDelay = (value: string): number => {
+   const delay = parseFloat(value);
+   if (isNaN(delay) || delay < 0) {
+      return 0;
+   } else if (delay > 50) {
+      return 50;
+   }
+   return delay;
+};
 
 /**
  * parses a string representing the numeric amount of the delay
@@ -203,7 +223,7 @@ const delay = map(
          expect(discard(str(')')), 'closing delimiter'),
       ])
    ),
-   ([delay]) => delay
+   ([delay]) => parseDelay(delay)
 );
 
 /**
@@ -217,21 +237,13 @@ const fromToLine = map(
          skipWsZero,
          expect(arrow, 'arrow'),
          skipWsZero,
-         optional(delay),
+         optionalDefault(delay, 0),
          skipWsZero,
          expect(simpleParticipant, 'destination participant alias'),
          expect(discard(skipLines), 'end of line'),
       ])
    ),
-   ([from, arrow, delay, to]) => ({
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      from: from!,
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      to: to!,
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      arrow: arrow!,
-      delay,
-   })
+   ([from, arrow, delay, to]) => ({ from, to, arrow, delay })
 );
 
 /**
@@ -240,13 +252,18 @@ const fromToLine = map(
 const labelLine = taggedLine('label');
 
 /**
- * assembles a message from fromTo and label
+ * assembles a message from fromToLine and label
  */
 const messageLines = context(
    map(
-      pair(fromToLine, optional(labelLine)),
-      ({ first: { from, to, arrow, delay }, second: label }) =>
-         processMessage(from, to, arrow, delay, label)
+      sequence([fromToLine, optional(labelLine)]),
+      ([{ from, to, arrow, delay }, label]): Message => ({
+         from,
+         to,
+         label,
+         delay,
+         ...arrow,
+      })
    ),
    'expected signal'
 );
@@ -255,14 +272,14 @@ const messageLines = context(
  * parse a diagram from a title, participants, and messages
  */
 const diagram = map(
-   terminated(
-      pair(
+   filterNull(
+      sequence([
          preceded(skipLinesZero, optional(titleLine)),
-         pair(manyZero(participantLine), manyZero(messageLines))
-      ),
-      eof()
+         manyZero(participantLine),
+         manyZero(any([messageLines])),
+      ])
    ),
-   ({ first: title, second: { first: participants, second: messages } }) =>
+   ([title, participants, messages]) =>
       makeDiagram(participants, messages, title)
 );
 
@@ -271,14 +288,14 @@ const makeDiagram = (
    messages: Message[],
    title?: string
 ): ParsedDiagram => {
-   const resolvedParticipants = extractParticipants(participants, messages);
-   return { participants: resolvedParticipants, messages, title };
+   extractParticipants(participants, messages);
+   return { participants, messages, title };
 };
 
 const extractParticipants = (
    participants: Participant[],
    messages: Message[]
-): Participant[] => {
+) => {
    const nameIs = (str: string) => (p: Participant) => p.name == str;
    for (const message of messages) {
       if (participants.findIndex(nameIs(message.from)) === -1) {
@@ -289,53 +306,4 @@ const extractParticipants = (
          participants.push({ name: message.to });
       }
    }
-
-   return participants;
-};
-
-const processMessage = (
-   from: string,
-   to: string,
-   arrowStr: string,
-   delayStr?: string,
-   label?: string
-): Message => {
-   let delay = 0;
-
-   if (delayStr) {
-      delay = parseFloat(delayStr);
-      if (isNaN(delay) || delay < 0) {
-         delay = 0;
-      } else if (delay > 50) {
-         delay = 50;
-      }
-   }
-
-   let arrow: ArrowEnd = 'filled';
-   let dashes = 0;
-   for (const ch of arrowStr) {
-      if (ch === '>') {
-         arrow = 'empty';
-      } else if (ch === '-') {
-         dashes += 1;
-      }
-   }
-
-   let line: LineStyle;
-   if (dashes === 1) {
-      line = 'dashed';
-   } else if (dashes === 2) {
-      line = 'dotted';
-   } else {
-      line = 'solid';
-   }
-
-   return {
-      from,
-      to,
-      label,
-      arrow,
-      line,
-      delay,
-   };
 };

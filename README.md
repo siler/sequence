@@ -11,8 +11,8 @@ All other tasks (builds, cleaning, etc.) are run with [just](https://github.com/
 
 ## Workflows
 
-For frontend work use `just frontend`, this starts the Create React App server and rebuilds `core` when files change.
+For frontend work use `just frontend/start`, this starts the Create React App server and watches for changes to it. If are also editing `core`, start `just core/watch` as well.
 
-When testing the server, use `just server`. This starts the server with `nodemon` and rebuilds `core` and `frontend` on change.
+When testing the server, use `just server`. This starts the server with `nodemon` which watches for updates. If also editing `frontend`, use `just frontend/watch`. If editing `core`, it's the same as above.
 
 A docker image tagged `sequence` can be created with `just image`. A container can be started on port 3000 with `just container`.

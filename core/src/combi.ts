@@ -1,3 +1,8 @@
+// This file uses type shenanigans to map tuples through
+// parser combinators for better destructuring. These
+// shenanigans require tuples to be cast as any[] in some
+// cases.
+
 export type Parser<T> = (ctx: Context) => Result<T>;
 
 export interface Context {
@@ -209,9 +214,9 @@ export const discard = <T>(parser: Parser<T>): Parser<null> => {
       const res = parser(ctx);
       if (res.type === 'success') {
          return withValue(res, null);
-      } else {
-         return res;
       }
+
+      return res;
    };
 };
 
@@ -222,6 +227,7 @@ export const any = <T>(parsers: Parser<T>[]): Parser<T> => {
    return (ctx) => {
       let furthestRes: Error | null = null;
 
+      // guarantees at least one parser will be evaluated
       if (parsers.length === 0) {
          return newFailure(ctx, 'failure to pass at least one parser to any');
       }
@@ -240,6 +246,8 @@ export const any = <T>(parsers: Parser<T>[]): Parser<T> => {
          }
       }
 
+      // guaranteed to be non-null since one parser was processed
+      // and this code was reached, therefore an Error occurred
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return furthestRes!;
    };
@@ -257,6 +265,20 @@ export const optional = <T>(parser: Parser<T>): Parser<T | undefined> => {
       }
 
       return newSuccess(ctx, undefined);
+   };
+};
+
+/**
+ * applies a parser zero or one times. if zero, returns a default value
+ */
+export const optionalDefault = <T>(parser: Parser<T>, value: T): Parser<T> => {
+   return (ctx) => {
+      const res = parser(ctx);
+      if (res.type === 'error') {
+         return newSuccess(res.ctx, value);
+      }
+
+      return res;
    };
 };
 
@@ -317,83 +339,102 @@ export const many = <T>(parser: Parser<T>): Parser<T[]> => {
    };
 };
 
-type Pair<A, B> = Readonly<{
-   first: A;
-   second: B;
-}>;
-
-/**
- * executes both parsers returning the result as a Pair
- */
-export const pair = <A, B>(
-   parserA: Parser<A>,
-   parserB: Parser<B>
-): Parser<Pair<A, B>> => {
-   return (ctx) => {
-      const resA = parserA(ctx);
-      if (resA.type !== 'success') {
-         return resA;
-      }
-
-      const resB = parserB(resA.ctx);
-      if (resB.type !== 'success') {
-         return resB;
-      }
-
-      return withValue(resB, { first: resA.value, second: resB.value });
-   };
-};
-
 /**
  * executes both parsers, discarding the first value
  */
-export const preceded = <A, B>(
-   parserA: Parser<A>,
-   parserB: Parser<B>
-): Parser<B> => {
+export const preceded = <F, R>(
+   first: Parser<F>,
+   parser: Parser<R>
+): Parser<R> => {
    return (ctx) => {
-      const resA = parserA(ctx);
-      if (resA.type !== 'success') {
-         return resA;
+      const firstResult = first(ctx);
+      if (firstResult.type !== 'success') {
+         return firstResult;
       }
 
-      const resB = parserB(resA.ctx);
-      if (resB.type !== 'success') {
-         return resB;
+      const parserResult = parser(firstResult.ctx);
+      if (parserResult.type !== 'success') {
+         return parserResult;
       }
 
-      return withValue(resB, resB.value);
+      return withValue(parserResult, parserResult.value);
    };
 };
 
 /**
  * executes both parsers, discarding the second value
  */
-export const terminated = <A, B>(
-   parserA: Parser<A>,
-   parserB: Parser<B>
-): Parser<A> => {
+export const terminated = <R, T>(
+   parser: Parser<R>,
+   terminator: Parser<T>
+): Parser<R> => {
    return (ctx) => {
-      const resA = parserA(ctx);
-      if (resA.type !== 'success') {
-         return resA;
+      const parserRes = parser(ctx);
+      if (parserRes.type !== 'success') {
+         return parserRes;
       }
 
-      const resB = parserB(resA.ctx);
-      if (resB.type !== 'success') {
-         return resB;
+      const terminatorRes = terminator(parserRes.ctx);
+      if (terminatorRes.type !== 'success') {
+         return terminatorRes;
       }
 
-      return withValue(resB, resA.value);
+      return withValue(terminatorRes, parserRes.value);
    };
 };
 
 /**
- * executes all parsers of the same type in order
+ * executes all three parsers, discarding the delimiters
  */
-export const sequence = <T>(parsers: Parser<T>[]): Parser<T[]> => {
+export const delimited = <O, R, C>(
+   open: Parser<O>,
+   inner: Parser<R>,
+   close: Parser<C>
+): Parser<R> => {
    return (ctx) => {
-      const values: T[] = [];
+      const openRes = open(ctx);
+      if (openRes.type !== 'success') {
+         return openRes;
+      }
+
+      const innerRes = inner(openRes.ctx);
+      if (innerRes.type !== 'success') {
+         return innerRes;
+      }
+
+      const closeRes = close(innerRes.ctx);
+      if (closeRes.type !== 'success') {
+         return closeRes;
+      }
+
+      return withValue(closeRes, innerRes.value);
+   };
+};
+
+/**
+ * Makes sure the array is interpreted as a tuple
+ */
+type ParsersTuple = readonly [Parser<unknown>] | readonly Parser<unknown>[];
+
+/**
+ * https://stackoverflow.com/questions/53439657/typescript-variadic-args-with-return-array-of-those-types
+ *
+ * maps a tuple of parsers into a tuple of their results
+ */
+type ParserReturns<T extends Record<number, Parser<unknown>>> = {
+   -readonly [P in keyof T]: T[P] extends Parser<infer R> ? R : never;
+};
+
+/**
+ * executes all parsers of the same type in order
+ *
+ * maps a tuple of parsers into a parser returning a tuple of their results
+ */
+export const sequence = <T extends ParsersTuple>(
+   parsers: T
+): Parser<ParserReturns<T>> => {
+   return (ctx) => {
+      const values = [];
       let nextCtx = ctx;
 
       for (const parser of parsers) {
@@ -406,7 +447,8 @@ export const sequence = <T>(parsers: Parser<T>[]): Parser<T[]> => {
          nextCtx = res.ctx;
       }
 
-      return newSuccess(nextCtx, values);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return newSuccess(nextCtx, values as any);
    };
 };
 
@@ -436,11 +478,27 @@ export const filter = <T>(
 };
 
 /**
+ * https://stackoverflow.com/questions/58984164/typescript-filter-tuple-type-by-an-arbitrary-type
+ *
+ * Recursively rebuilds the list of types
+ */
+type ExcludeFromTuple<T extends readonly unknown[], E> = T extends [
+   infer F,
+   ...infer R
+]
+   ? [F] extends [E]
+      ? ExcludeFromTuple<R, E>
+      : [F, ...ExcludeFromTuple<R, E>]
+   : [];
+
+/**
  * removes all nulls from the results of a list of parsers
  */
-export const filterNull = <T>(parser: Parser<(T | null)[]>): Parser<T[]> => {
+export const filterNull = <T extends readonly unknown[]>(
+   parser: Parser<T>
+): Parser<ExcludeFromTuple<T, null>> => {
    return (ctx) => {
-      const values: T[] = [];
+      const values = [];
       const res = parser(ctx);
 
       if (res.type !== 'success') {
@@ -453,18 +511,19 @@ export const filterNull = <T>(parser: Parser<(T | null)[]>): Parser<T[]> => {
          }
       }
 
-      return withValue(res, values);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return withValue(res, values as any);
    };
 };
 
 /**
  * removes all undefineds and nulls from the results of a list of parsers
  */
-export const clean = <T>(
-   parser: Parser<(T | null | undefined)[]>
-): Parser<T[]> => {
+export const clean = <T extends readonly unknown[]>(
+   parser: Parser<T>
+): Parser<ExcludeFromTuple<T, null | undefined>> => {
    return (ctx) => {
-      const values: T[] = [];
+      const values = [];
       const res = parser(ctx);
 
       if (res.type !== 'success') {
@@ -477,7 +536,8 @@ export const clean = <T>(
          }
       }
 
-      return withValue(res, values);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return withValue(res, values as any);
    };
 };
 

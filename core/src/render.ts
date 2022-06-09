@@ -194,7 +194,7 @@ const drawSignalLine = (
                graphics,
                style.arrow,
                false,
-               signal.props.arrow === 'filled',
+               signal.props.head === 'filled',
                { x: length, y: 0 }
             );
             break;
@@ -203,7 +203,7 @@ const drawSignalLine = (
                graphics,
                style.arrow,
                true,
-               signal.props.arrow === 'filled'
+               signal.props.head === 'filled'
             );
             break;
          case 'none':
@@ -211,7 +211,7 @@ const drawSignalLine = (
                graphics,
                style.arrow,
                true,
-               signal.props.arrow === 'filled',
+               signal.props.head === 'filled',
                { x: 0, y: signal.delayHeight }
             );
             break;

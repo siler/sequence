@@ -1,12 +1,12 @@
-import ReactDOM from 'react-dom/client';
-import './index.css';
-import { App } from './App';
-import reportWebVitals from './reportWebVitals';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { Home } from './Home';
-import { Shell } from './Shell';
-import { NotFound } from './NotFound';
 import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { App } from './App';
+import { Home } from './Home';
+import './index.css';
+import { NotFound } from './NotFound';
+import reportWebVitals from './reportWebVitals';
+import { Shell } from './Shell';
 
 const root = ReactDOM.createRoot(
    document.getElementById('root') as HTMLElement
@@ -19,7 +19,7 @@ root.render(
             <Route path="/" element={<Shell />}>
                <Route index element={<Home />} />
                <Route path="edit" element={<App />}>
-                  <Route path=":diagram" element={<div />} />
+                  <Route path=":diagram" element={<></>} />
                </Route>
             </Route>
             <Route path="*" element={<NotFound />} />
