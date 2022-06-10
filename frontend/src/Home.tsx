@@ -73,13 +73,7 @@ Browser --> You
          return;
       }
 
-      const image = canvas.current.toDataURL('image/png', 9);
-      const octetStream = image.replace(
-         /^data:image\/png/,
-         'data:application/octet-stream'
-      );
-
-      setUrl(octetStream);
+      setUrl(canvas.current.toDataURL('image/png', 9));
    }, [canvas, setUrl]);
 
    return (
