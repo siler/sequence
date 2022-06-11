@@ -16,7 +16,7 @@ fmt:
 
 # generate the syntax parser
 generate:
-    npx lezer-generator --output src/syntax/gen/parser src/syntax/sequence.grammar
+    npx lezer-generator --output src/workspace/language/gen/parser src/workspace/language/sequence.grammar
 
 # execute tests
 test:
